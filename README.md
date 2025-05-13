@@ -449,8 +449,6 @@ inkrealm-project/
 ├── tailwind.config.ts          # TailwindCSS configuration
 └── tsconfig.json               # TypeScript configuration
 ```
-
-
 ## 10. ประสบการณ์ผู้ใช้งาน (Leading UX & User Flows)
 
 ### 10.1 การเข้าสู่ระบบและหน้าแรก (Login & Home Page Experience)
@@ -519,3 +517,95 @@ inkrealm-project/
   - ระบุ `markline_id` หรือ `(chapter_id, translator_id)`
 - แก้ไข `marked_lines_data` ในตาราง `mark_lines` โดยตรง
 
+
+### 11. ระบบความปลอดภัย (Security)
+- **Authentication:** Supabase Auth + JWT (มี Refresh Token)
+- **Transport Security:** HTTPS ตลอดการเชื่อมต่อ
+- **API Security:**  
+  - Rate-limiting (Vercel/Supabase)  
+  - XSS protection (Sanitize input + CSP)  
+  - CSRF protection (Anti-CSRF tokens หากจำเป็น)  
+  - Authorization: ตรวจสิทธิ์ทุก API โดยใช้ RLS ใน Supabase และ Middleware ใน Next.js  
+- **Data Security:**  
+  - Row-Level Security (RLS) ควบคุมการเข้าถึงตามบทบาท  
+  - Email verification  
+  - Login attempt throttling  
+
+---
+
+### 12. การทดสอบและประกันคุณภาพ (Testing & QA)
+- **Unit Tests (Frontend):** Jest/Vitest + React Testing Library  
+- **End-to-End Tests:** Cypress  
+- **Load Tests:** k6 หรือ JMeter  
+- **Accessibility (A11y):** axe-core / Lighthouse  
+- **Test Restore Procedures:** ทดสอบกู้คืนจากสำรองข้อมูลเป็นระยะ  
+
+---
+
+### 13. การปรับปรุงประสบการณ์ผู้ใช้ (UX Enhancements – Responsive Focus)
+- **Empty States:** มีข้อความเชิญชวนและ CTA  
+- **Loading States:**  
+  - Skeleton loaders  
+  - Spinners/Progress bars  
+- **Notifications/Toasts:** DaisyUI Alert/Toast  
+- **Error Handling:** ข้อความชัดเจน แนะนำทางแก้ไข  
+- **A11y:**  
+  - Contrast ratio เพียงพอ  
+  - Keyboard navigation  
+  - ARIA attributes + Alt text  
+- **Transitions & Micro-interactions:** นุ่มนวล ไม่รก  
+
+---
+
+### 14. การจัดการข้อมูลและการสำรองข้อมูล (Data Management & Backup)
+- **Supabase DB Backups:** ตรวจสอบ PITR และ Retention Policy  
+- **Supabase Storage Backups:** สำรอง `avatars`, `novel-covers`, `chapter-text-files` ไปยังที่เก็บอื่น (เช่น S3)  
+- **Manual/Scheduled Backups:**  
+  - pg_dump รายวัน/รายสัปดาห์  
+  - สคริปต์แจ้งเตือนเมื่อสำรองล้มเหลว  
+- **Data Retention Policy:** กำหนดเวอร์ชันและระยะเวลาการเก็บ  
+
+---
+
+### 15. Backend: โครงสร้างฐานข้อมูล (Supabase – PostgreSQL)
+- **roles** (id, name, permissions JSONB)  
+- **profiles** (id UUID → auth.users, display_name, avatar_url, role_id)  
+- **categories** (id, name, slug)  
+- **novels** (id, title, slug, synopsis, cover_image_url, author_id, category_id, original_language, visibility, default_chapter_status, default_chapter_access, total_chapters, published_chapters, status, timestamps)  
+- **chapters** (id, novel_id, chapter_number, title, slug, content_original, status, access_level, created_by, word_count, read_by_users JSONB, timestamps)  
+- **bookmarks** (id, user_id, chapter_id, created_at)  
+- **mark_lines** (id, chapter_id, translator_id, marked_lines_data JSONB, timestamps)  
+- **chapter_versions**, **activity_logs**  
+- **Triggers:** `trigger_set_timestamp` on update  
+- **Indexes:** ตามคีย์หลักและ FK  
+- **Initial Roles:** ‘member’, ‘translator’, ‘admin’  
+- **RLS Functions:** `get_user_role(user_id)`  
+
+---
+
+### 16. Backend: Supabase Storage Buckets
+- **novel-covers:**  
+  - Public read, translators/admins write  
+  - image/jpeg, png, webp (≤5 MB)  
+- **chapter-text-files:**  
+  - translators/admins upload  
+  - text/plain (≤2 MB)  
+  - ลบอัตโนมัติหลังประมวลผล  
+- **avatars:**  
+  - Public read, user upload/update/delete เฉพาะไฟล์ตัวเอง  
+  - image/jpeg, png (≤2 MB)  
+
+---
+
+### 17. การนำไปใช้งานและการติดตามผล (Deployment & Monitoring)
+- **CI/CD (GitHub Actions → Vercel):**  
+  - ติดตั้ง, build, test, deploy ทุก push ไป `main`/`staging`  
+- **Environment Variables:**  
+  - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`  
+- **Deployment Checklist:**  
+  - รัน migrations, ตั้ง RLS + Storage Policies, ตั้ง Backup Policy  
+  - ทดสอบ User Flows, A11y, Responsive, Logging  
+- **Monitoring:**  
+  - Sentry (Frontend/Backend errors)  
+  - Supabase Dashboard (DB logs, usage)  
+  - Vercel Dashboard (Build/deploy logs, analytics)
