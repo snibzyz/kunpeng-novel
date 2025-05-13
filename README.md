@@ -26,6 +26,12 @@
     * [8.9 หน้าโปรไฟล์ (Profile Page)](#89-หน้าโปรไฟล์-profile-page)
 9.  [โครงสร้างโฟลเดอร์โปรเจกต์ (Project Folder Structure)](#9-โครงสร้างโฟลเดอร์โปรเจกต์-project-folder-structure)
 10. [ประสบการณ์ผู้ใช้งาน (Leading UX & User Flows)](#10-ประสบการณ์ผู้ใช้งาน-leading-ux--user-flows)
+    * [10.1 การเข้าสู่ระบบ และหน้าแรก (Login & Home Page Experience)](#101-การเข้าสู่ระบบ-และหน้าแรก-login--home-page-experience)
+    * [10.2 การเข้าดูนิยายและสารบัญ (Novel Detail Page Flow)](#102-การเข้าดูนิยายและสารบัญ-novel-detail-page-flow)
+    * [10.3 การใช้งานบุ๊คมาร์ค (Bookmark Functionality)](#103-การใช้งานบุ๊คมาร์ค-bookmark-functionality)
+    * [10.4 การเปลี่ยน Avatar](#104-การเปลี่ยน-avatar)
+    * [10.5 ขั้นตอนการแปลและการจัดการเส้นมาร์ค (Translator Flow)](#105-ขั้นตอนการแปลและการจัดการเส้นมาร์ค-translator-flow)
+    * [10.6 (สำหรับผู้ดูแลระบบ/ผู้ใช้ที่มีสิทธิ์) การวางข้อมูลบรรทัดมาร์คเก่า](#106-สำหรับผู้ดูแลระบบผู้ใช้ที่มีสิทธิ์-การวางข้อมูลบรรทัดมาร์คเก่า)
 11. [ระบบความปลอดภัย (Security)](#11-ระบบความปลอดภัย-security)
 12. [การทดสอบและประกันคุณภาพ (Testing & QA)](#12-การทดสอบและประกันคุณภาพ-testing--qa)
 13. [การปรับปรุงประสบการณ์ผู้ใช้ (UX Enhancements)](#13-การปรับปรุงประสบการณ์ผู้ใช้-ux-enhancements---responsive-focus)
@@ -220,8 +226,8 @@
 
 * **Stack:** Supabase (จัดการ relation `user_bookmarks`), DaisyUI (Table หรือ Card List, Button, Modal สำหรับยืนยัน, Breadcrumbs)
 * **Breadcrumbs:** แสดง เช่น หน้าแรก > บุ๊คมาร์ค
-* UI: ธีมทอง-เทา, ฟอนต์ Sarabun, ตอบสนองทุกอุปกรณ์, UI ภาษาไทย
-* ปุ่ม "อ่าน" พาไปยังตอนที่ Bookmark ในโหมดที่เหมาะสมกับบทบาท (ต้องการการเข้าสู่ระบบ)
+* **UI:** ธีมทอง-เทา, ฟอนต์ Sarabun, ตอบสนองทุกอุปกรณ์, UI ภาษาไทย
+* **ปุ่ม "อ่าน"** พาไปยังตอนที่ Bookmark ในโหมดที่เหมาะสมกับบทบาท (ต้องการการเข้าสู่ระบบ)
 
 ### 8.4 แดชบอร์ดนักแปล (Translator Dashboard)
 
@@ -864,7 +870,7 @@ Link Project: supabase link --project-ref <your-project-id>
 Pull Database Schema: supabase db pull
 Start Local Supabase Services: supabase start
 Run Database Migrations/Seed Data (Backend Setup):
-SQL Schema: นำโค้ด SQL จาก SQL Schema สำหรับสร้างตาราง และ SQL สำหรับสร้าง View ไปรันใน SQL Editor ของ Supabase Dashboard หรือผ่าน Supabase CLI migrations.
+SQL Schema: นำโค้ด SQL จาก SQL Schema สำหรับสร้างตาราง และ SQL สำหรับสร้าง View admin_markline_overview ไปรันใน SQL Editor ของ Supabase Dashboard หรือผ่าน Supabase CLI migrations.
 Seed Data (ถ้ามี): สร้างไฟล์ seed script และรัน.
 Generate Supabase Types (เพื่อให้ Frontend รู้จักโครงสร้าง Backend):
 npx supabase gen types typescript --project-id <your-project-id> --schema public > src/types/database.types.ts
@@ -877,5 +883,4 @@ npm run dev
 # หรือ yarn dev
 # หรือ pnpm dev
 
-แอปพลิเคชันควรจะเปิดให้เข้าชมได้ที่ http://localhost:3000.
-© 2025 INKREALM
+แอปพลิเคชันควรจะเปิดให้เข้าชมได้ที่ `http
