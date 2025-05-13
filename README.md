@@ -448,388 +448,74 @@ inkrealm-project/
 ├── postcss.config.js           # PostCSS configuration (for TailwindCSS)
 ├── tailwind.config.ts          # TailwindCSS configuration
 └── tsconfig.json               # TypeScript configuration
+```
 
 
-10. ประสบการณ์ผู้ใช้งาน (Leading UX & User Flows)
-10.1 การเข้าสู่ระบบ และหน้าแรก (Login & Home Page Experience)
-การเข้าสู่เว็บไซต์ครั้งแรก / ผู้ใช้ที่ยังไม่ได้เข้าสู่ระบบ:
-ผู้ใช้จะเข้าสู่หน้าแรก (Home Page /)
-Modal เข้าสู่ระบบ (Login Modal) จะปรากฏขึ้นโดยอัตโนมัติ (ใช้ DaisyUI Modal) Modal นี้จะมีฟอร์มสำหรับเข้าสู่ระบบ และลิงก์ไปยังการลงทะเบียน หรือลืมรหัสผ่าน
-ผู้ใช้สามารถเลือกดำเนินการอย่างใดอย่างหนึ่งใน Modal (เข้าสู่ระบบ, ไปหน้าลงทะเบียน, ฯลฯ)
-ผู้ใช้สามารถเลือกที่จะ ปิด Modal เพื่อเข้าชมเนื้อหาบนหน้าแรกที่อนุญาตสำหรับผู้ใช้ทั่วไป (Guest/Anonymous users)
-หากผู้ใช้ปิด Modal และพยายามเข้าถึงเนื้อหาหรือฟังก์ชันที่ต้องการการยืนยันตัวตน (เช่น คลิกอ่านตอนนิยาย, เข้าหน้าบุ๊คมาร์ค, สร้างนิยาย) Modal เข้าสู่ระบบจะปรากฏขึ้นอีกครั้ง
-ผู้ใช้ที่เข้าสู่ระบบแล้ว:
-เมื่อผู้ใช้เข้าสู่เว็บไซต์ จะสามารถเข้าถึงเนื้อหาและฟังก์ชันตามสิทธิ์ของตนเองได้โดยตรง โดย Modal เข้าสู่ระบบจะไม่ปรากฏขึ้น
-การคลิกปกนิยายบนหน้าแรกจะนำไปยัง "หน้าข้อมูลนิยายและสารบัญ (/[novel_slug])" โดยตรง
-10.2 การเข้าดูนิยายและสารบัญ (Novel Detail Page Flow)
-UI ภาษาไทย, สารบัญแบบ Collapse.
-เมื่อผู้ใช้อ่านตอนจบ: ระบบจะบันทึก user_id ของผู้ใช้ลงใน chapters.read_by_users ของตอนนั้น (ต้องการการเข้าสู่ระบบ).
-หากผู้ใช้ที่ยังไม่ได้เข้าสู่ระบบพยายามเข้าถึงหน้านี้หรือคลิกอ่านตอน Modal เข้าสู่ระบบจะปรากฏขึ้น.
-10.3 การใช้งานบุ๊คมาร์ค (Bookmark Functionality)
-UI ภาษาไทย.
-ปุ่ม "อ่าน" พาไปยังตอนที่ Bookmark ในโหมดที่เหมาะสมกับบทบาท.
-การใช้งานฟังก์ชันบุ๊คมาร์ค (เพิ่ม/ลบ/ดู) ต้องการการเข้าสู่ระบบ (Modal เข้าสู่ระบบจะปรากฏหากยังไม่ได้ login).
-10.4 การเปลี่ยน Avatar
-ผู้ใช้ไปที่หน้าโปรไฟล์ (Profile Page - ต้องการการเข้าสู่ระบบ).
-เลือกอัปโหลดรูปใหม่.
-ระบบ Frontend ส่งไฟล์ไป Backend (API Route).
-Backend อัปโหลดไฟล์ไปยัง avatars bucket ใน Supabase Storage และอัปเดต avatar_url ในตาราง profiles.
-10.5 ขั้นตอนการแปลและการจัดการเส้นมาร์ค (Translator Flow)
-(ต้องการการเข้าสู่ระบบและสิทธิ์นักแปล)
-การสร้างตอนใหม่ (โดยนักแปล):
-นักแปลสร้างตอนใหม่ (ผ่าน Modal เพิ่มตอนด้วย .txt หรือ Modal เพิ่ม/แก้ไขตอน).
-Backend: ข้อมูลตอนถูกบันทึกลงตาราง chapters. ระบบ (เช่น Trigger หรือ Supabase Function หรือ Logic ใน API Route ตอนสร้างตอน) สร้าง Record ใหม่ในตาราง mark_lines อัตโนมัติ: chapter_id (ID ตอนใหม่), translator_id (ID ผู้สร้าง), marked_lines_data: [].
-นักแปลเข้าสู่ "โหมดแปล" ของตอนที่ต้องการ:
-หากเป็นครั้งแรกที่นักแปลคนนี้เข้าถึงตอนนี้ และยังไม่มี Record ใน mark_lines สำหรับ chapter_id และ translator_id นี้ ระบบ (Frontend หรือ Backend) จะสร้าง Record ใหม่ให้โดยอัตโนมัติด้วย marked_lines_data = [].
-การมาร์คบรรทัด: นักแปลคลิกที่บรรทัด -> หมายเลขบรรทัดของบรรทัดนั้นจะถูกเพิ่มเข้าไปใน Array ของ mark_lines.marked_lines_data (หากยังไม่มี) หรือลบออก (หากมีอยู่แล้ว) สำหรับนักแปลคนนั้นและตอนนี้ (Frontend ส่งคำขอไป Backend API เพื่ออัปเดต).
-การล้างมาร์ค: คลิกปุ่ม "ล้างมาร์คทั้งหมด" -> Modal ยืนยัน -> หากยืนยัน mark_lines.marked_lines_data สำหรับนักแปลคนนั้นและตอนนี้จะถูกตั้งค่าเป็น [] (Frontend ส่งคำขอไป Backend API).
-การคัดลอกมาร์คทั้งหมด (Copy All Marks):
-นักแปลคลิกปุ่ม "คัดลอกมาร์คทั้งหมด".
-Backend/Frontend Logic: ดึง marked_lines_data (Array หมายเลขบรรทัด) จาก mark_lines และ content_original จาก chapters -> แยก content_original เป็น Array ของบรรทัด -> สร้าง String ใหม่โดยวน Loop ตามหมายเลขบรรทัดใน marked_lines_data ดึงข้อความมาต่อกัน -> คัดลอก String ไปยัง Clipboard (Frontend) -> แสดง Feedback.
-การดับเบิลคลิก: คัดลอกข้อความต้นฉบับของบรรทัดนั้นๆ (Frontend Logic).
-10.6 (สำหรับผู้ดูแลระบบ/ผู้ใช้ที่มีสิทธิ์) การวางข้อมูลบรรทัดมาร์คเก่า
-ผู้ใช้เข้าถึงตาราง mark_lines (ผ่าน Supabase Studio หรือ Admin Interface ที่สร้างขึ้น).
-ค้นหา Record ที่ต้องการ (ตาม chapter_id และ translator_id - อาจใช้ View admin_markline_overview ช่วยค้นหา).
-แก้ไข Field marked_lines_data โดยวาง Array ของหมายเลขบรรทัดที่ต้องการทับลงไป.
-11. ระบบความปลอดภัย (Security)
-Authentication (Backend - Supabase Auth): JWT Auth พร้อม Refresh Token.
-Transport Security: HTTPS ตลอดการเชื่อมต่อ.
-API Security (Backend - Next.js API Routes & Supabase):
-Rate Limiting (สามารถตั้งค่าที่ Vercel หรือ Supabase).
-ป้องกัน XSS (Sanitize user input ใน Frontend และ Backend, ใช้ Content Security Policy (CSP) ที่เหมาะสม).
-ป้องกัน CSRF (Next.js และ Supabase อาจมีกลไกจัดการส่วนนี้, พิจารณา anti-CSRF tokens หากจำเป็น).
-ตรวจสอบสิทธิ์ (Authorization) ก่อนเรียกใช้งาน API ทุกตัว โดยอิงตาม Role และ Permissions (RLS ใน Supabase, Middleware ใน Next.js).
-Data Security (Backend - Supabase):
-Row-Level Security (RLS) ใน Supabase PostgreSQL เพื่อให้แน่ใจว่าผู้ใช้สามารถเข้าถึงได้เฉพาะข้อมูลที่ตนเองมีสิทธิ์.
-Account Security (Backend - Supabase Auth & Frontend Logic):
-ฟีเจอร์ยืนยันอีเมล (Email Verification).
-การป้องกันการเข้าสู่ระบบที่ไม่สำเร็จหลายครั้ง (Login attempt throttling).
-12. การทดสอบและประกันคุณภาพ (Testing & QA)
-Unit Test (Frontend): ใช้ Jest หรือ Vitest ร่วมกับ React Testing Library (RTL) สำหรับทดสอบ Components และ Functions.
-End-to-End (E2E) Test (Frontend/Full-stack): ใช้ Cypress สำหรับการทดสอบ User Flows ทั้งหมดของแอปพลิเคชัน.
-Load Test (Backend/Full-stack): ใช้ k6 หรือ JMeter สำหรับทดสอบประสิทธิภาพของระบบภายใต้ภาระงานสูง.
-Accessibility (A11y) Test (Frontend): ใช้ axe-core หรือ Lighthouse ใน Chrome DevTools เพื่อตรวจสอบและปรับปรุงการเข้าถึงเว็บไซต์.
-13. การปรับปรุงประสบการณ์ผู้ใช้ (UX Enhancements - Responsive Focus)
-ส่วนใหญ่เกี่ยวข้องกับ Frontend:
-Empty States: ทุกส่วนที่มีการแสดงรายการข้อมูล (เช่น หน้าแรกไม่มีนิยาย, ไม่มีบุ๊คมาร์ค) ควรมี Empty State ที่สวยงาม พร้อม Call-to-action ที่เหมาะสม.
-Loading States:
-Skeleton Loaders: ขณะรอข้อมูลโหลด แสดงโครงร่างของ UI.
-Spinners/Progress Bars: สำหรับ action ที่ใช้เวลานาน (เช่น อัปโหลดไฟล์, บันทึกข้อมูล).
-Notifications/Toasts:
-ใช้สำหรับแจ้งผลการกระทำที่ไม่เปลี่ยนหน้า (เช่น "บันทึกการเปลี่ยนแปลงสำเร็จ", "คัดลอกข้อความแล้ว", "เพิ่มในบุ๊คมาร์คแล้ว").
-ควรปรากฏในตำแหน่งที่ไม่บดบังเนื้อหาสำคัญ และหายไปเองในเวลาที่เหมาะสม (ใช้ DaisyUI Alert หรือ Toast).
-Error Handling & Feedback:
-แสดงข้อความ Error ที่เป็นมิตร เข้าใจง่าย และบอกแนวทางการแก้ไข (ถ้าทำได้).
-หน้า 404 (Not Found) และ 500 (Server Error) ที่ออกแบบมาเฉพาะสำหรับ INKREALM.
-Accessibility (A11y):
-Contrast ratio เพียงพอ.
-Keyboard navigation สมบูรณ์.
-ARIA attributes ที่เหมาะสมสำหรับ dynamic content.
-Alt text สำหรับรูปภาพ.
-Transitions & Micro-interactions:
-การเปลี่ยนหน้า (page transitions) ที่นุ่มนวล.
-Hover effects, button press effects ที่ตอบสนองต่อผู้ใช้. (ทั้งหมดนี้ควร subtle ไม่ใช่รกหรือทำให้เว็บช้า)
-14. การจัดการข้อมูลและการสำรองข้อมูล (Data Management & Backup)
-เกี่ยวข้องกับ Backend (Supabase) และกระบวนการ DevOps:
-Supabase Built-in Backups: Supabase ให้บริการสำรองข้อมูลอัตโนมัติสำหรับ PostgreSQL database (Point-in-Time Recovery - PITR อาจขึ้นอยู่กับ Plan ที่เลือก). ควรตรวจสอบนโยบายการสำรองข้อมูลและระยะเวลาการเก็บรักษา (Retention Policy) ของ Supabase.
-Supabase Storage Backups: ข้อมูลที่เก็บใน Supabase Storage (เช่น รูปปกนิยาย, ไฟล์ .txt, รูป Avatar) ควรมีแผนการสำรองข้อมูลแยกต่างหาก หรือตรวจสอบว่าบริการของ Supabase ครอบคลุมส่วนนี้อย่างไร. อาจพิจารณาการทำสำเนาไปยัง Storage อื่นเป็นระยะ (เช่น AWS S3, Google Cloud Storage).
-Manual/Scheduled Backups (Optional but Recommended):
-Database Dumps: พิจารณาการทำ Database Dumps (เช่น pg_dump) เป็นระยะ (เช่น รายวัน หรือ รายสัปดาห์) และเก็บไว้ในที่ปลอดภัยแยกต่างหาก.
-Scripting: อาจสร้าง Script สำหรับการทำ Backup อัตโนมัติและแจ้งเตือนเมื่อสำเร็จหรือล้มเหลว.
-Testing Restore Procedures: สิ่งสำคัญคือต้องมีการทดสอบกระบวนการกู้คืนข้อมูล (Restore) จาก Backup เป็นประจำ.
-Data Retention Policy: กำหนดนโยบายการเก็บรักษาข้อมูลสำรองให้ชัดเจน ว่าจะเก็บไว้นานเท่าใด และมีกี่เวอร์ชัน.
-15. Backend: โครงสร้างฐานข้อมูล (Supabase - PostgreSQL)
-ชื่อตารางและคอลัมน์เป็นภาษาอังกฤษ. ส่วนนี้เป็นหัวใจของ Backend.
-SQL Schema สำหรับสร้างตาราง
--- ตาราง: บทบาทผู้ใช้
-CREATE TABLE roles (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE, -- e.g., 'member', 'translator', 'admin'
-    permissions JSONB -- สามารถระบุสิทธิ์ต่างๆ ในรูปแบบ JSON
-);
+## 10. ประสบการณ์ผู้ใช้งาน (Leading UX & User Flows)
 
--- ตาราง: โปรไฟล์ผู้ใช้
-CREATE TABLE profiles (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE, -- Foreign Key to Supabase auth.users
-    display_name TEXT,
-    avatar_url TEXT, -- URL ของรูปโปรไฟล์ผู้ใช้
-    role_id INT REFERENCES roles(id) DEFAULT 1, -- Default to 'member' or appropriate ID
-    created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now()
-);
+### 10.1 การเข้าสู่ระบบและหน้าแรก (Login & Home Page Experience)
 
--- ตาราง: หมวดหมู่นิยาย
-CREATE TABLE categories (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
-    slug TEXT NOT NULL UNIQUE,
-    created_at TIMESTAMPTZ DEFAULT now()
-);
+#### 10.1.1 ผู้ใช้ที่ยังไม่ได้เข้าสู่ระบบ
+- เมื่อเข้าหน้าแรก (`/`) จะเปิด Login Modal ขึ้นอัตโนมัติ (DaisyUI Modal)
+  - ฟอร์มเข้าสู่ระบบ (Email/Password) พร้อมลิงก์ไปยัง “ลงทะเบียน” และ “ลืมรหัสผ่าน”
+  - ปุ่ม “ปิด” เพื่อดูเนื้อหาสำหรับ Guest/Anonymous
+- หาก Guest พยายามเข้าถึงฟังก์ชันที่ต้องการการยืนยันตัวตน (อ่านตอน, บุ๊คมาร์ค, สร้างนิยาย ฯลฯ) ให้แสดง Login Modal อีกครั้ง
 
--- ตาราง: นิยาย
-CREATE TABLE novels (
-    id SERIAL PRIMARY KEY,
-    title TEXT NOT NULL,
-    slug TEXT NOT NULL UNIQUE,
-    synopsis TEXT,
-    cover_image_url TEXT,
-    author_id UUID REFERENCES profiles(id) ON DELETE SET NULL, -- ผู้สร้างนิยาย
-    category_id INT REFERENCES categories(id) ON DELETE SET NULL,
-    original_language TEXT NOT NULL, -- e.g., 'zh', 'en', 'th'
-    visibility TEXT DEFAULT 'All Members', -- e.g., 'All Members', 'Translators Only'
-    default_chapter_status TEXT DEFAULT 'Published', -- e.g., 'Published', 'Draft'
-    default_chapter_access TEXT DEFAULT 'Member', -- e.g., 'Member', 'Translator' (can be JSON array if multiple)
-    total_chapters INT DEFAULT 0,
-    published_chapters INT DEFAULT 0,
-    status TEXT DEFAULT 'ต่อเนื่อง', -- e.g., 'ต่อเนื่อง', 'จบแล้ว'
-    created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now(),
-    last_published_at TIMESTAMPTZ
-);
+#### 10.1.2 ผู้ใช้ที่เข้าสู่ระบบแล้ว
+- เข้าถึงเนื้อหาและฟังก์ชันตามบทบาทได้ทันที (Login Modal จะไม่ปรากฏ)
+- คลิกที่ปกนิยายบนหน้าแรก → ไปยัง “หน้าข้อมูลนิยายและสารบัญ” โดยตรง
 
--- ตาราง: ตอนของนิยาย
-CREATE TABLE chapters (
-    id SERIAL PRIMARY KEY,
-    novel_id INT REFERENCES novels(id) ON DELETE CASCADE NOT NULL,
-    chapter_number INT NOT NULL, -- ลำดับตอนภายในนิยาย
-    title TEXT NOT NULL,
-    slug TEXT NOT NULL, -- จะถูกสร้างขึ้น เช่น novel-slug-chapter-number
-    content_original TEXT, -- เนื้อหาต้นฉบับ (สำหรับนักแปล) หรือเนื้อหาที่แสดงผล
-    status TEXT DEFAULT 'Published', -- e.g., 'Published', 'Draft'
-    access_level TEXT DEFAULT 'Member', -- e.g., 'Member', 'Translator' (can be JSON array if multiple)
-    created_by UUID REFERENCES profiles(id) ON DELETE SET NULL, -- ผู้สร้าง/เพิ่มตอน
-    word_count INT DEFAULT 0,
-    read_by_users JSONB DEFAULT '{}'::jsonb, -- เก็บ {"user_uuid_1": true, "user_uuid_2": true}
-    created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now(),
-    published_at TIMESTAMPTZ,
-    UNIQUE (novel_id, chapter_number),
-    UNIQUE (novel_id, slug)
-);
+---
 
--- ตาราง: บุ๊คมาร์ค
-CREATE TABLE bookmarks (
-    id SERIAL PRIMARY KEY,
-    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
-    chapter_id INT REFERENCES chapters(id) ON DELETE CASCADE NOT NULL,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    UNIQUE (user_id, chapter_id)
-);
+### 10.2 การเข้าดูนิยายและสารบัญ (Novel Detail Page Flow)
+- UI ภาษาไทย, สารบัญแบบ Collapse
+- เมื่ออ่านตอนจบ ระบบบันทึก `user_id` ลงใน `chapters.read_by_users`
+- หากยังไม่เข้าสู่ระบบและคลิกอ่านตอน → แสดง Login Modal
 
--- ตาราง: บรรทัดที่มาร์คโดยนักแปล
-CREATE TABLE mark_lines (
-    id SERIAL PRIMARY KEY,
-    chapter_id INT REFERENCES chapters(id) ON DELETE CASCADE NOT NULL,
-    translator_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL, -- ID ของนักแปล (จาก profiles.id)
-    marked_lines_data JSONB DEFAULT '[]'::jsonb, -- Array ของหมายเลขบรรทัด เช่น [21, 40, 39]
-    created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now(),
-    UNIQUE (chapter_id, translator_id) -- นักแปลหนึ่งคนมีชุดมาร์คเดียวต่อหนึ่งตอน
-);
--- หมายเหตุ: สำหรับการแสดงผลที่เป็นมิตรต่อผู้ใช้ (เช่น แสดงชื่อนักแปล, ชื่อนิยาย) ให้ใช้ View `admin_markline_overview`
+---
 
--- ตาราง: เวอร์ชันของตอน (Optional, for version history)
-CREATE TABLE chapter_versions (
-    id SERIAL PRIMARY KEY,
-    chapter_id INT REFERENCES chapters(id) ON DELETE CASCADE NOT NULL,
-    version_number INT NOT NULL,
-    title TEXT,
-    content_original TEXT,
-    changed_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    UNIQUE (chapter_id, version_number)
-);
+### 10.3 การใช้งานบุ๊คมาร์ค (Bookmark Functionality)
+- UI ภาษาไทย
+- ปุ่ม “อ่าน” นำไปยังตอนที่ Bookmark ในโหมดที่เหมาะสมกับบทบาท
+- เพิ่ม/ลบ/ดูบุ๊คมาร์ค ต้องเข้าสู่ระบบ (Guest → Login Modal)
 
--- ตาราง: Log การทำงานของระบบ
-CREATE TABLE activity_logs (
-    id SERIAL PRIMARY KEY,
-    user_id UUID REFERENCES profiles(id) ON DELETE SET NULL, -- ผู้ใช้ที่กระทำการ (ถ้ามี)
-    action_type TEXT NOT NULL, -- e.g., 'CREATE_NOVEL', 'UPDATE_USER_ROLE', 'DELETE_CHAPTER'
-    target_type TEXT, -- e.g., 'novel', 'user', 'chapter'
-    target_id TEXT, -- ID ของสิ่งที่ถูกกระทำ (อาจเป็น INT หรือ UUID จึงใช้ TEXT)
-    details JSONB, -- รายละเอียดเพิ่มเติมของการกระทำ (เช่น ค่าเก่า/ค่าใหม่)
-    created_at TIMESTAMPTZ DEFAULT now()
-);
+---
 
--- Initial Roles Data
-INSERT INTO roles (name, permissions) VALUES
-('member', '{}'::jsonb),
-('translator', '{"can_create_novel": true, "can_access_translator_mode": true}'::jsonb),
-('admin', '{"can_manage_users": true, "can_manage_all_content": true, "can_access_admin_dashboard": true}'::jsonb);
+### 10.4 การเปลี่ยน Avatar (Avatar Change)
+- เข้า “หน้าโปรไฟล์” (ต้องเข้าสู่ระบบ)
+- อัปโหลดรูปใหม่ → Frontend ส่งไฟล์ไปยัง API Route
+- Backend อัปโหลดไปยัง `avatars` bucket และอัปเดต `profiles.avatar_url`
 
--- Functions for RLS (Row Level Security)
--- Get user's role
-CREATE OR REPLACE FUNCTION get_user_role(user_id_input UUID)
-RETURNS TEXT AS $$
-DECLARE
-  user_role TEXT;
-BEGIN
-  SELECT r.name INTO user_role
-  FROM profiles p
-  JOIN roles r ON p.role_id = r.id
-  WHERE p.id = user_id_input;
-  RETURN user_role;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+---
 
--- Function to update updated_at timestamp
-CREATE OR REPLACE FUNCTION trigger_set_timestamp()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+### 10.5 ขั้นตอนการแปลและการจัดการเส้นมาร์ค (Translator Flow)
 
--- Apply trigger to tables
-CREATE TRIGGER set_profiles_timestamp
-BEFORE UPDATE ON profiles
-FOR EACH ROW
-EXECUTE FUNCTION trigger_set_timestamp();
+> **ต้องเข้าสู่ระบบ และมีสิทธิ์ `translator`**
 
-CREATE TRIGGER set_novels_timestamp
-BEFORE UPDATE ON novels
-FOR EACH ROW
-EXECUTE FUNCTION trigger_set_timestamp();
+#### 10.5.1 การสร้างตอนใหม่
+- ผ่าน Modal “เพิ่มตอนด้วย .txt” (Batch Upload) หรือ Modal “เพิ่ม/แก้ไขตอน”
+- Backend สร้าง record ใน `mark_lines` อัตโนมัติ
+  - `chapter_id`, `translator_id`, `marked_lines_data: []`
 
-CREATE TRIGGER set_chapters_timestamp
-BEFORE UPDATE ON chapters
-FOR EACH ROW
-EXECUTE FUNCTION trigger_set_timestamp();
+#### 10.5.2 เข้าโหมดแปล (Translator Mode)
+- หากยังไม่มี Record ใน `mark_lines` สำหรับ `(chapter_id, translator_id)` → สร้างใหม่
+- **มาร์ค/ยกเลิกมาร์คบรรทัด**  
+  - Frontend ส่ง API → อัปเดต `marked_lines_data` (JSONB array)
+- **ล้างมาร์คทั้งหมด**  
+  - คลิก “ล้างมาร์คทั้งหมด” → Modal ยืนยัน → ตั้ง `marked_lines_data = []`
 
-CREATE TRIGGER set_mark_lines_timestamp
-BEFORE UPDATE ON mark_lines
-FOR EACH ROW
-EXECUTE FUNCTION trigger_set_timestamp();
+#### 10.5.3 คัดลอกมาร์คทั้งหมด (Copy All Marks)
+- ดึง `marked_lines_data` และ `content_original`
+- แยกเนื้อหาเป็น array ของบรรทัด → รวมข้อความตามหมายเลขบรรทัด → คัดลอกไป Clipboard (Frontend)
 
--- Indexes for performance
-CREATE INDEX idx_novels_author_id ON novels(author_id);
-CREATE INDEX idx_novels_category_id ON novels(category_id);
-CREATE INDEX idx_chapters_novel_id ON chapters(novel_id);
-CREATE INDEX idx_bookmarks_user_id ON bookmarks(user_id);
-CREATE INDEX idx_bookmarks_chapter_id ON bookmarks(chapter_id);
-CREATE INDEX idx_mark_lines_chapter_id ON mark_lines(chapter_id);
-CREATE INDEX idx_mark_lines_translator_id ON mark_lines(translator_id);
-CREATE INDEX idx_activity_logs_user_id ON activity_logs(user_id);
-CREATE INDEX idx_activity_logs_action_type ON activity_logs(action_type);
-CREATE INDEX idx_activity_logs_created_at ON activity_logs(created_at);
+#### 10.5.4 คัดลอกบรรทัดแบบดับเบิลคลิก (Double-click Copy)
+- ดับเบิลคลิกที่บรรทัด → คัดลอกข้อความต้นฉบับของบรรทัดนั้น
 
+---
 
-ตาราง mark_lines และ View admin_markline_overview เพื่อการจัดการข้อมูลมาร์คที่ง่ายขึ้น
-ตาราง mark_lines ถูกออกแบบมาเพื่อเก็บข้อมูลการมาร์คบรรทัดของนักแปล โดยเก็บ translator_id (UUID) ซึ่งเป็น Foreign Key ไปยังตาราง profiles และ chapter_id ซึ่งเป็น Foreign Key ไปยังตาราง chapters เพื่อความเป็นมาตรฐานของฐานข้อมูลเชิงสัมพันธ์
-เพื่อให้การตรวจสอบและย้ายข้อมูลง่ายขึ้น โดยเฉพาะเมื่อคุณมีนิยายหลายเรื่องและนักแปลหลายคน เราได้สร้าง SQL View ชื่อ admin_markline_overview ขึ้นมา View นี้จะทำการ JOIN ตาราง mark_lines, profiles, chapters, และ novels เข้าด้วยกัน ทำให้คุณสามารถ:
-เห็นชื่อนักแปล (Display Name): แทนที่จะเป็น translator_id (UUID) ที่ดูยาก View จะแสดง translator_name ซึ่งดึงมาจาก profiles.display_name
-เห็นชื่อนิยายและชื่อตอน: View จะแสดง novel_title และ chapter_title ทำให้ทราบทันทีว่าข้อมูลมาร์คนี้เป็นของนิยายและตอนใด
-กรองและค้นหาง่าย: สามารถใช้ View นี้ใน Admin Dashboard เพื่อค้นหาและกรองข้อมูลมาร์คตามชื่อนักแปล, ชื่อนิยาย, หรือชื่อตอนได้สะดวก
-การใช้งานสำหรับการย้ายข้อมูล: เมื่อคุณต้องการย้ายข้อมูลมาร์คเก่า คุณสามารถ Query จาก View admin_markline_overview เพื่อระบุ chapter_id และ translator_id (UUID) ที่ถูกต้องของแต่ละ Record ที่ต้องการอัปเดต จากนั้นจึงไปแก้ไขข้อมูล marked_lines_data ในตาราง mark_lines โดยตรง (ผ่าน Supabase Studio หรือ Admin Interface ที่สร้างขึ้น) โดยอ้างอิงจาก id ของตาราง mark_lines หรือคู่ chapter_id และ translator_id
-SQL สำหรับสร้าง View admin_markline_overview
-CREATE VIEW admin_markline_overview AS
-SELECT
-    ml.id AS markline_id, -- ID ของ record ในตาราง mark_lines
-    p.display_name AS translator_name, -- ชื่อที่แสดงผลของนักแปล (จาก profiles.display_name)
-    p.id AS translator_uuid, -- UUID ของนักแปล (เผื่อใช้ในการอ้างอิงกลับไปที่ profiles.id)
-    n.title AS novel_title, -- ชื่อนิยาย (จาก novels.title)
-    n.id AS novel_id, -- ID นิยาย
-    c.title AS chapter_title, -- ชื่อตอน (จาก chapters.title)
-    c.chapter_number, -- เลขที่ตอน
-    c.id AS chapter_id, -- ID ตอน
-    ml.marked_lines_data, -- Array ของหมายเลขบรรทัดที่มาร์คไว้ (JSONB)
-    jsonb_array_length(
-        CASE
-            WHEN ml.marked_lines_data IS NULL THEN '[]'::jsonb
-            ELSE ml.marked_lines_data
-        END
-    ) AS total_marks_in_chapter, -- จำนวนบรรทัดที่มาร์คในตอนนี้
-    ml.updated_at AS markline_last_updated -- วันที่อัปเดตข้อมูลมาร์คล่าสุด
-FROM
-    mark_lines ml
-JOIN
-    profiles p ON ml.translator_id = p.id -- เชื่อมกับตาราง profiles เพื่อเอาชื่อนักแปล
-JOIN
-    chapters c ON ml.chapter_id = c.id -- เชื่อมกับตาราง chapters เพื่อเอาข้อมูลตอน
-JOIN
-    novels n ON c.novel_id = n.id -- เชื่อมกับตาราง novels เพื่อเอาชื่อนิยาย
-ORDER BY
-    p.display_name, n.title, c.chapter_number;
-
-
-หมายเหตุเกี่ยวกับ Database (Backend):
-profiles.id ควรเชื่อมโยงกับ auth.users.id ของ Supabase โดยอัตโนมัติเมื่อผู้ใช้สมัครสมาชิก.
-การใช้ ON DELETE CASCADE และ ON DELETE SET NULL ถูกกำหนดตามความเหมาะสมของความสัมพันธ์.
-พิจารณาเพิ่ม Indexes เพิ่มเติมตามความจำเป็นเพื่อประสิทธิภาพในการ Query.
-RLS (Row-Level Security) Policies จะต้องถูกกำหนดใน Supabase Dashboard เพื่อควบคุมการเข้าถึงข้อมูลตามบทบาทผู้ใช้.
-16. Backend: Supabase Storage Buckets
-ส่วนนี้เป็นส่วนหนึ่งของ Backend infrastructure. จำเป็นต้องสร้าง Storage Buckets ต่อไปนี้ใน Supabase Project ของคุณ:
-novel-covers:
-วัตถุประสงค์: สำหรับเก็บไฟล์รูปปกนิยาย
-สิทธิ์การเข้าถึง (Policies):
-ผู้ใช้ทั่วไป (Public/Anon): สามารถอ่าน (Read) ได้
-ผู้ใช้ที่ยืนยันตัวตนแล้ว (Authenticated Users) ที่มีบทบาท 'translator' หรือ 'admin': สามารถอัปโหลด (Create), แก้ไข (Update), ลบ (Delete) ได้ (ควรจำกัดตาม author_id ของนิยาย หรือผ่าน Functions เพื่อความปลอดภัย)
-ประเภทไฟล์ที่อนุญาต: image/jpeg, image/png, image/webp
-ขนาดไฟล์สูงสุด: (ตามที่กำหนด เช่น 5MB)
-chapter-text-files:
-วัตถุประสงค์: สำหรับเก็บไฟล์ .txt ที่นักแปลอัปโหลดเพื่อสร้างตอนแบบ Batch
-สิทธิ์การเข้าถึง (Policies):
-ผู้ใช้ที่ยืนยันตัวตนแล้ว (Authenticated Users) ที่มีบทบาท 'translator' หรือ 'admin': สามารถอัปโหลด (Create) ได้
-ควรมีการลบไฟล์อัตโนมัติหลังจากประมวลผลเสร็จสิ้น หรือตั้งค่าให้เข้าถึงได้เฉพาะ Backend Functions
-ประเภทไฟล์ที่อนุญาต: text/plain
-ขนาดไฟล์สูงสุด: (ตามที่กำหนด เช่น 2MB ต่อไฟล์)
-avatars:
-วัตถุประสงค์: สำหรับเก็บไฟล์รูปโปรไฟล์ผู้ใช้ (Avatar)
-สิทธิ์การเข้าถึง (Policies):
-ผู้ใช้ทั่วไป (Public/Anon): สามารถอ่าน (Read) รูปโปรไฟล์ได้
-ผู้ใช้ที่ยืนยันตัวตนแล้ว (Authenticated Users): สามารถอัปโหลด (Create), แก้ไข (Update โดยการอัปโหลดทับ), ลบ (Delete) รูปโปรไฟล์ของตนเองได้ (ควรมีการกำหนด Policy ให้ User สามารถจัดการได้เฉพาะไฟล์ที่ตนเองเป็นเจ้าของ โดยอาจจะตั้งชื่อไฟล์เป็น user_id/<filename> หรือใช้ metadata และ RLS บน Storage)
-ประเภทไฟล์ที่อนุญาต: image/jpeg, image/png
-ขนาดไฟล์สูงสุด: (ตามที่กำหนด เช่น 2MB)
-17. การนำไปใช้งานและการติดตามผล (Deployment & Monitoring)
-กระบวนการนี้เกี่ยวข้องกับการนำ Application (Frontend และ Backend APIs) ขึ้น Production และการดูแลระบบ.
-DevOps (CI/CD):
-GitHub Actions:
-Workflow ใน .github/workflows/deploy.yml จะถูก trigger เมื่อมีการ push code ไปยัง branch ที่กำหนด (เช่น main สำหรับ Production, staging สำหรับ Staging).
-ขั้นตอนใน Workflow:
-Checkout code
-Set up Node.js
-Install dependencies (npm ci หรือ pnpm install --frozen-lockfile)
-Build Next.js application (npm run build หรือ pnpm build) (สร้าง Frontend assets และ Backend API handlers)
-(Optional) Run tests (npm test หรือ pnpm test)
-Deploy to Vercel (ใช้ Vercel CLI หรือ GitHub Action ของ Vercel)
-Environments:
-Vercel Environment Variables:
-Production Environment: ตั้งค่า Environment Variables ใน Vercel Dashboard สำหรับ Production deployment (เชื่อมกับ main branch).
-NEXT_PUBLIC_SUPABASE_URL (Frontend & Backend API access)
-NEXT_PUBLIC_SUPABASE_ANON_KEY (Frontend & Backend API access)
-SUPABASE_SERVICE_ROLE_KEY (สำหรับ Backend API Routes หรือ Server Components ที่ต้องการสิทธิ์สูง)
-Preview/Staging Environment: ตั้งค่า Environment Variables สำหรับ Preview deployments.
-Deployment Checklist (ก่อน Production ครั้งแรก):
-[ ] Backend (Supabase) Project Setup:
-[ ] สร้าง Supabase Project สำหรับ Production.
-[ ] ตั้งค่า Authentication (Email provider, Third-party logins ถ้ามี).
-[ ] รัน Database schema migrations ทั้งหมด (SQL จากข้อ 15).
-[ ] ตั้งค่า Row-Level Security (RLS) Policies ให้ครบถ้วนและถูกต้อง.
-[ ] สร้าง Storage Buckets (ตามข้อ 16) พร้อม Policies ที่ถูกต้อง (โดยเฉพาะ avatars bucket สำหรับการเปลี่ยนรูปโปรไฟล์).
-[ ] ตั้งค่านโยบาย Backup ของ Database.
-[ ] Deployment Platform (Vercel) Project Setup:
-[ ] สร้าง Project ใหม่บน Vercel และเชื่อมต่อกับ GitHub Repository.
-[ ] กำหนด Production Branch (เช่น main).
-[ ] ตั้งค่า Environment Variables ทั้งหมดสำหรับ Production.
-[ ] (Optional) ตั้งค่า Custom Domain.
-[ ] Codebase & Application (Frontend & Backend Logic):
-[ ] ตรวจสอบว่า Environment Variables ถูกเรียกใช้ถูกต้อง.
-[ ] ทดสอบ User Flows ทั้งหมด รวมถึงการเปลี่ยน Avatar และการแสดง Modal เข้าสู่ระบบอัตโนมัติ.
-[ ] ตรวจสอบ Error Handling และ Logging.
-[ ] ตรวจสอบ Responsive Design.
-[ ] ทำ A11y checks.
-[ ] ลบ console.log ที่ไม่จำเป็น.
-[ ] CI/CD Pipeline:
-[ ] ตรวจสอบว่า GitHub Actions workflow ทำงานถูกต้อง.
-[ ] Monitoring Setup:
-[ ] เชื่อมต่อ Sentry.
-[ ] ตั้งค่าการแจ้งเตือนสำหรับ Critical Errors.
-การ Deploy (ผ่าน Vercel):
-Vercel จะทำการ build และ deploy โดยอัตโนมัติเมื่อมีการ push code ไปยัง branch ที่เชื่อมต่อ (เช่น main สำหรับ production, หรือ branch อื่นๆ สำหรับ preview deployments).
-ตรวจสอบสถานะการ deploy และ logs ผ่าน Vercel Dashboard.
-Monitoring หลัง Deploy:
-Sentry: ติดตาม Real-time errors (Frontend และ Backend API).
-Supabase Dashboard: Logs, Usage, Reports (Backend).
-Vercel Dashboard: Build logs, Deployment status, Analytics (Frontend & Backend API).
+### 10.6 การย้ายข้อมูลบรรทัดมาร์คเก่า (Legacy Mark Lines Management)
+- ใช้ View `admin_markline_overview` ใน Supabase Studio หรือ Admin Interface
+  - ค้นหาโดย `translator_name`, `novel_title`, `chapter_title`
+  - ระบุ `markline_id` หรือ `(chapter_id, translator_id)`
+- แก้ไข `marked_lines_data` ในตาราง `mark_lines` โดยตรง
 
