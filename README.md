@@ -42,8 +42,6 @@
     * [SQL สำหรับสร้าง View `admin_markline_overview`](#sql-สำหรับสร้าง-view-admin_markline_overview)
 16. [Backend: Supabase Storage Buckets](#16-backend-supabase-storage-buckets)
 17. [การนำไปใช้งานและการติดตามผล (Deployment & Monitoring)](#17-การนำไปใช้งานและการติดตามผล-deployment--monitoring)
-18. [การตั้งค่าเริ่มต้นสำหรับการพัฒนา (Getting Started - Local Development)](#18-การตั้งค่าเริ่มต้นสำหรับการพัฒนา-getting-started---local-development)
-
 ---
 
 ## 1. ปรัชญาการออกแบบโดยรวม (Overall Design Philosophy)
@@ -834,53 +832,4 @@ Monitoring หลัง Deploy:
 Sentry: ติดตาม Real-time errors (Frontend และ Backend API).
 Supabase Dashboard: Logs, Usage, Reports (Backend).
 Vercel Dashboard: Build logs, Deployment status, Analytics (Frontend & Backend API).
-18. การตั้งค่าเริ่มต้นสำหรับการพัฒนา (Getting Started - Local Development)
-ส่วนนี้จะอธิบายขั้นตอนการตั้งค่าโปรเจกต์เพื่อเริ่มพัฒนาบนเครื่อง local.
-สิ่งที่ต้องมี (Prerequisites):
-Node.js และ npm/yarn/pnpm: (แนะนำ LTS version ล่าสุด)
-Git: สำหรับ Version Control
-Supabase Account: สร้างโปรเจกต์ใหม่บน Supabase (สำหรับ Backend)
-Supabase CLI (Optional but Recommended): สำหรับจัดการ Database Migrations และ Local Development Supabase CLI
-IDE/Text Editor: เช่น VSCode
-ขั้นตอนการตั้งค่า:
-Clone Repository:
-git clone <your-repository-url>
-cd inkrealm-project
 
-
-Install Dependencies (Frontend & Dev tools):
-npm install
-# หรือ yarn install
-# หรือ pnpm install
-
-
-ตั้งค่า Environment Variables (.env.local สำหรับ Frontend และ Backend API local access):
-คัดลอกไฟล์ .env.example ไปเป็น .env.local:
-cp .env.example .env.local
-
-
-เปิดไฟล์ .env.local และกรอกค่าจาก Supabase Project ของคุณ:
-NEXT_PUBLIC_SUPABASE_URL: Project URL (Supabase Dashboard > Project Settings > API)
-NEXT_PUBLIC_SUPABASE_ANON_KEY: Project API Keys > anon public (Supabase Dashboard)
-SUPABASE_SERVICE_ROLE_KEY: Project API Keys > service_role secret (Supabase Dashboard - ข้อควรระวัง: สำหรับ local dev หรือ server-side เท่านั้น)
-DATABASE_URL: Connection string > URI (Supabase Dashboard > Project Settings > Database - ถ้าใช้ Supabase CLI)
-(Optional) Supabase Local Development Setup (Backend local instance):
-Login Supabase CLI: supabase login
-Link Project: supabase link --project-ref <your-project-id>
-Pull Database Schema: supabase db pull
-Start Local Supabase Services: supabase start
-Run Database Migrations/Seed Data (Backend Setup):
-SQL Schema: นำโค้ด SQL จาก SQL Schema สำหรับสร้างตาราง และ SQL สำหรับสร้าง View admin_markline_overview ไปรันใน SQL Editor ของ Supabase Dashboard หรือผ่าน Supabase CLI migrations.
-Seed Data (ถ้ามี): สร้างไฟล์ seed script และรัน.
-Generate Supabase Types (เพื่อให้ Frontend รู้จักโครงสร้าง Backend):
-npx supabase gen types typescript --project-id <your-project-id> --schema public > src/types/database.types.ts
-# หรือถ้าใช้ local dev กับ Supabase CLI
-# npx supabase gen types typescript --local > src/types/database.types.ts
-
-
-Run Development Server (Frontend & Backend API local):
-npm run dev
-# หรือ yarn dev
-# หรือ pnpm dev
-
-แอปพลิเคชันควรจะเปิดให้เข้าชมได้ที่ `http
