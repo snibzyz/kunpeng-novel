@@ -1,36 +1,350 @@
-โอเคครับ! นี่คือฉบับปรับปรุง README.md และรายละเอียดฐานข้อมูล SQL สำหรับ INKREALM.CO (V5.1) ที่คุณต้องการ โดยเน้นความละเอียดและความครบถ้วนตามที่คุณระบุมาทั้งหมด
+ยอดเยี่ยมเลยครับ! เพื่อให้ README.md นี้สมบูรณ์และพร้อมใช้งานที่สุดสำหรับ INKREALM.CO (V5.1) ผมจะจัดเรียงเนื้อหาใหม่ตามลำดับความสำคัญที่คุณต้องการ โดยเน้น Tech Stack, Database, และการตั้งค่า Supabase ก่อน จากนั้นจึงลงรายละเอียดของแต่ละหน้าและฟังก์ชัน พร้อมตัวอย่าง Code SQL สำหรับสร้างตาราง และข้อความ Toast Notification ภาษาไทยครับ
 
+```markdown
 # INKREALM.CO: ข้อกำหนดระบบและคุณสมบัติหลัก (V5.1) - README
 
-เอกสารนี้เป็นข้อกำหนดระบบและคุณสมบัติหลักสำหรับแพลตฟอร์ม INKREALM.CO (V5.1) โดยเน้นฟังก์ชันที่จำเป็นตามการปรับปรุงล่าสุด Tech Stack หลักคือ SvelteKit และ Supabase ออกแบบมาเพื่อความสะดวกในการปรับใช้, ทดสอบ, และย้ายไปยังโดเมนต่างๆ
+เอกสารนี้เป็นข้อกำหนดระบบและคุณสมบัติหลักสำหรับแพลตฟอร์ม INKREALM.CO (V5.1) โดยเน้นฟังก์ชันที่จำเป็นตามการปรับปรุงล่าสุด ออกแบบมาเพื่อความสะดวกในการปรับใช้, ทดสอบ, และย้ายไปยังโดเมนต่างๆ
 
-## 1. ปรัชญาการออกแบบโดยรวม
+## 1. สรุป Tech Stack (Tech Stack Summary)
+
+*   **Framework:** SvelteKit
+*   **Styling:** TailwindCSS
+*   **UI Library:** Skeleton UI
+*   **Form Handling & Validation:** Felte และ Zod
+*   **Icon Library:** Lucide-Svelte
+*   **Backend & Authentication:** Supabase Platform
+    *   Database: PostgreSQL
+    *   Authentication: Supabase Auth
+    *   Storage: Supabase Storage
+    *   Serverless Functions: Supabase Edge Functions (สำหรับ Logic ฝั่ง Server ที่ซับซ้อน หากจำเป็น)
+*   **ภาษา:** TypeScript
+
+## 2. ปรัชญาการออกแบบโดยรวม
 
 *   **การแสดงผลหรูหราและอ่านง่าย:**
     *   **สีหลัก:** สีทอง (Gold)
-    *   **สีรอง:** สีเทา (Gray)
-    *   **โหมดสว่าง (Light Mode):** พื้นหลังขาว, ตัวอักษรเทาเข้ม/ดำ, องค์ประกอบเน้นสีทอง
-    *   **โหมดมืด (Dark Mode):** พื้นหลังเทาเข้ม/ดำ, ตัวอักษรเทาอ่อน/ขาว, องค์ประกอบเน้นสีทอง
-    *   **ฟอนต์หลัก:** Sarabun สำหรับเนื้อหาทั้งหมด
-    *   **โลโก้:** อาจใช้เทคนิค Gradient สีทอง-เทา หรือตามความเหมาะสม
+    *   **สีรอง:** สีเทา (Grey)
+    *   **โหมดสว่าง (Light Mode):** พื้นหลังหลักสีขาวหรือเทาอ่อน, ตัวอักษรสีเทาเข้ม/ดำ, องค์ประกอบสีทอง
+    *   **โหมดมืด (Dark Mode):** พื้นหลังหลักสีดำหรือเทาเข้ม, ตัวอักษรสีเทาอ่อน/ขาว, องค์ประกอบสีทอง
+    *   **โลโก้:** อาจใช้ Gradient สีทอง-เทา หรือสีทองเด่น
+    *   **ฟอนต์หลัก:** Sarabun (สำหรับเนื้อหาภาษาไทยและ UI ทั่วไป)
+    *   การเปลี่ยนธีม (Theme Switching) จะถูกควบคุมผ่านกลไกของ Skeleton UI หรือ CSS Variables ที่กำหนดไว้ เพื่อให้สีสันมีความสอดคล้องและไม่ผิดเพี้ยนเมื่อสลับโหมด
 *   **เครื่องมือสำหรับนักแปล:** มีฟังก์ชันสนับสนุนการทำงานของนักแปลโดยเฉพาะ
 *   **ใช้งานง่าย ตอบโจทย์ทุกอุปกรณ์:** UI ใช้งานง่าย (Intuitive), Responsive Design, หน้าอ่านไม่มี Horizontal Scroll
 *   **ความยืดหยุ่นและการทดสอบ:** โครงสร้างที่เอื้อต่อการเปลี่ยนแปลงโดเมนและการทดสอบระบบที่ง่าย
 
-## 2. ภาพรวมระบบหลัก (Core System Overview)
+## 3. โครงสร้างฐานข้อมูล (Database Structure - Supabase PostgreSQL)
 
-*   **ระบบยืนยันตัวตนและจัดการผู้ใช้:** ลงทะเบียน, เข้าสู่ระบบ (อีเมล/รหัสผ่าน, Google), ลืมรหัสผ่าน, จัดการโปรไฟล์, บทบาทและสิทธิ์
-*   **ระบบจัดการเนื้อหานิยาย (CMS):** การสร้าง/แก้ไข/ลบนิยายและตอน (ผ่าน Modals เป็นหลัก), อัปโหลดเนื้อหา (ปก, .txt), การจัดการหมวดหมู่นิยาย (สำหรับ Admin), ระบบจัดการเวอร์ชันสำหรับนิยายและตอน
-*   **ระบบการอ่านและบุ๊คมาร์ค:** หน้าอ่านที่ปรับแต่งได้, ระบบบุ๊คมาร์คตอน, โหมดอ่านต่อเนื่อง, การสลับโหมดการอ่านสำหรับนักแปล
-*   **ระบบเครื่องมือสำหรับนักแปล:** โหมดแปล (เมื่อเปิดใช้งาน), ระบบบรรทัดมาร์ค, หน้าจัดการบรรทัดมาร์ค
-*   **ระบบแดชบอร์ด:** สำหรับนักแปลและผู้ดูแลระบบ (รวมถึงหน้าจัดการผู้ใช้, จัดการหมวดหมู่, จัดการประกาศ, หน้าจัดการเว็บไซต์, และ หน้าจัดการเวอร์ชัน)
-*   **ระบบฐานข้อมูลและไฟล์:** Supabase (PostgreSQL, Storage)
-*   **ระบบการแจ้งเตือนผู้ใช้ (User Feedback System):** การใช้ Toast notifications สำหรับการยืนยันการกระทำต่างๆ (แสดงมุมขวาล่าง)
-*   **ระบบประกาศ (Announcement System):** สำหรับ Admin ในการสร้างและเผยแพร่ประกาศไปยังผู้ใช้
+ฐานข้อมูลหลักจะถูกออกแบบโดยเน้นความสัมพันธ์ของข้อมูล, ความง่ายในการ Query, และการรองรับ Row-Level Security (RLS) ของ Supabase
 
-## 3. โครงสร้าง URL ที่เป็นมิตรและการจัดการโดเมน
+### 3.1 SQL Schema (คำสั่งสร้างตาราง)
 
-เพื่อให้ URL ของเว็บไซต์ INKREALM.CO อ่านง่าย, เป็นมิตรต่อผู้ใช้, ดีต่อ SEO, และง่ายต่อการย้ายโดเมน:
+```sql
+-- เปิดใช้งาน Extension ที่จำเป็น (หากยังไม่ได้เปิด)
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+-- ตารางบทบาทผู้ใช้
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE -- เช่น 'Member', 'Translator', 'Admin'
+);
+
+-- ตารางข้อมูลผู้ใช้ (เชื่อมโยงกับ auth.users ของ Supabase)
+CREATE TABLE profiles (
+    id UUID PRIMARY KEY DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE CASCADE,
+    display_name TEXT,
+    avatar_url TEXT,
+    role_id INTEGER REFERENCES roles(id) DEFAULT 1, -- ตั้งค่าเริ่มต้นเป็น Member
+    role_expiry_date TIMESTAMP WITH TIME ZONE,
+    is_suspended BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ตารางหมวดหมู่นิยาย
+CREATE TABLE categories (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    slug TEXT NOT NULL UNIQUE,
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ตารางนิยาย
+CREATE TABLE novels (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    synopsis TEXT, -- สำหรับ Rich Text อาจเก็บเป็น HTML หรือ Markdown
+    cover_image_url TEXT,
+    category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
+    author_id UUID REFERENCES profiles(id) ON DELETE SET NULL, -- ผู้สร้าง/นักแปลหลัก
+    original_language TEXT CHECK (original_language IN ('zh', 'en', 'th')), -- จีน, อังกฤษ, ไทย
+    visibility TEXT[] DEFAULT ARRAY['ทุกคน']::TEXT[], -- เช่น ARRAY['ทุกคน', 'เฉพาะสมาชิก']
+    status TEXT DEFAULT 'ต่อเนื่อง' CHECK (status IN ('ต่อเนื่อง', 'จบแล้ว', 'ยุติการลง')),
+    default_chapter_status TEXT DEFAULT 'เผยแพร่' CHECK (default_chapter_status IN ('เผยแพร่', 'ฉบับร่าง')),
+    default_chapter_access_level TEXT[] DEFAULT ARRAY['ทุกคน']::TEXT[],
+    total_chapters INTEGER DEFAULT 0, -- อาจจะ update ด้วย trigger หรือ application logic
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ตารางตอนของนิยาย
+CREATE TABLE chapters (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    novel_id UUID NOT NULL REFERENCES novels(id) ON DELETE CASCADE,
+    chapter_number INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    content_original TEXT, -- เนื้อหาต้นฉบับ (อาจเป็น HTML จาก Rich Text Editor)
+    status TEXT DEFAULT 'เผยแพร่' CHECK (status IN ('เผยแพร่', 'ฉบับร่าง')), -- 'เผยแพร่', 'ฉบับร่าง'
+    access_level TEXT[] DEFAULT ARRAY['ทุกคน']::TEXT[], -- เช่น ARRAY['ทุกคน', 'เฉพาะสมาชิก']
+    created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    word_count INTEGER DEFAULT 0,
+    -- read_by_users JSONB, -- อาจจะซับซ้อนไป พิจารณาแยกตารางถ้าจำเป็นมากๆ
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(novel_id, chapter_number) -- แต่ละตอนในนิยายต้องมีเลขที่ไม่ซ้ำกัน
+);
+
+-- ตารางบุ๊คมาร์คของผู้ใช้
+CREATE TABLE user_bookmarks (
+    id BIGSERIAL PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+    chapter_id UUID NOT NULL REFERENCES chapters(id) ON DELETE CASCADE,
+    novel_id UUID NOT NULL REFERENCES novels(id) ON DELETE CASCADE, -- เพื่อความสะดวกในการ query
+    bookmarked_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, chapter_id)
+);
+
+-- ตารางบรรทัดมาร์คสำหรับนักแปล (สำคัญมาก!)
+CREATE TABLE mark_lines (
+    id BIGSERIAL PRIMARY KEY,
+    chapter_id UUID NOT NULL REFERENCES chapters(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE, -- ID ของนักแปลที่มาร์ค
+    line_number INTEGER NOT NULL, -- เลขบรรทัดที่ถูกมาร์ค (นับจาก 1)
+    marked_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    -- ข้อมูลเพิ่มเติมที่อาจช่วยในการ migrate หรือแสดงผล (ปกติจะ JOIN เอา)
+    -- novel_title_cache TEXT, -- ชื่อนิยาย (ถ้าต้องการ denormalize)
+    -- chapter_title_cache TEXT, -- ชื่อตอน (ถ้าต้องการ denormalize)
+    -- user_display_name_cache TEXT, -- ชื่อผู้ใช้ (ถ้าต้องการ denormalize)
+    UNIQUE(chapter_id, user_id, line_number) -- นักแปลคนหนึ่งมาร์คบรรทัดหนึ่งในตอนหนึ่งได้ครั้งเดียว
+);
+-- มุมมอง (View) สำหรับ mark_lines เพื่อให้ดูข้อมูลง่ายขึ้น (แนะนำ)
+CREATE OR REPLACE VIEW detailed_mark_lines AS
+SELECT
+    ml.id AS mark_id,
+    ml.line_number,
+    ml.marked_at,
+    ch.id AS chapter_id,
+    ch.chapter_number,
+    ch.title AS chapter_title,
+    n.id AS novel_id,
+    n.title AS novel_title,
+    p.id AS user_id,
+    p.display_name AS user_display_name
+FROM
+    mark_lines ml
+JOIN
+    chapters ch ON ml.chapter_id = ch.id
+JOIN
+    novels n ON ch.novel_id = n.id
+JOIN
+    profiles p ON ml.user_id = p.id;
+
+
+-- ตารางประกาศ
+CREATE TABLE announcements (
+    id SERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL, -- เนื้อหาประกาศ (รองรับ Markdown)
+    start_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    end_date TIMESTAMP WITH TIME ZONE NOT NULL,
+    target_roles TEXT[] DEFAULT ARRAY['ทุกคน']::TEXT[], -- เช่น ARRAY['Member', 'Translator', 'Admin']
+    target_pages TEXT[] DEFAULT ARRAY['หน้าแรก']::TEXT[], -- เช่น ARRAY['หน้าแรก', 'หน้านิยายทุกเรื่อง', 'หน้านิยายเฉพาะเรื่อง:[novel_slug]']
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ตารางการตั้งค่าเว็บไซต์ (เก็บเป็น key-value)
+CREATE TABLE site_settings (
+    key TEXT PRIMARY KEY,
+    value JSONB,
+    description TEXT, -- คำอธิบายว่า setting นี้คืออะไร
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ตาราง Changelog ของเว็บไซต์
+CREATE TABLE site_changelogs (
+    id SERIAL PRIMARY KEY,
+    version_number TEXT NOT NULL UNIQUE,
+    release_date DATE NOT NULL,
+    summary TEXT NOT NULL, -- รองรับ Markdown
+    is_published BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ตารางเวอร์ชันของข้อมูลนิยาย (Metadata)
+CREATE TABLE novel_versions (
+    id SERIAL PRIMARY KEY,
+    novel_id UUID NOT NULL REFERENCES novels(id) ON DELETE CASCADE,
+    version_number INTEGER NOT NULL,
+    metadata_snapshot JSONB NOT NULL, -- เก็บ snapshot ของข้อมูลนิยาย ณ เวลานั้น (title, synopsis, category, etc.)
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    notes TEXT, -- หมายเหตุสำหรับการเปลี่ยนแปลงเวอร์ชันนี้
+    UNIQUE(novel_id, version_number)
+);
+
+-- ตารางเวอร์ชันของเนื้อหาตอนนิยาย
+CREATE TABLE chapter_versions (
+    id SERIAL PRIMARY KEY,
+    chapter_id UUID NOT NULL REFERENCES chapters(id) ON DELETE CASCADE,
+    version_number INTEGER NOT NULL,
+    content_original_snapshot TEXT, -- เก็บ snapshot ของเนื้อหาต้นฉบับ ณ เวลานั้น
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
+    notes TEXT, -- หมายเหตุสำหรับการเปลี่ยนแปลงเวอร์ชันนี้
+    UNIQUE(chapter_id, version_number)
+);
+
+-- Function to update 'updated_at' timestamp
+CREATE OR REPLACE FUNCTION trigger_set_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Triggers for 'updated_at'
+CREATE TRIGGER set_timestamp_profiles
+BEFORE UPDATE ON profiles
+FOR EACH ROW
+EXECUTE FUNCTION trigger_set_timestamp();
+
+CREATE TRIGGER set_timestamp_categories
+BEFORE UPDATE ON categories
+FOR EACH ROW
+EXECUTE FUNCTION trigger_set_timestamp();
+
+CREATE TRIGGER set_timestamp_novels
+BEFORE UPDATE ON novels
+FOR EACH ROW
+EXECUTE FUNCTION trigger_set_timestamp();
+
+CREATE TRIGGER set_timestamp_chapters
+BEFORE UPDATE ON chapters
+FOR EACH ROW
+EXECUTE FUNCTION trigger_set_timestamp();
+
+CREATE TRIGGER set_timestamp_announcements
+BEFORE UPDATE ON announcements
+FOR EACH ROW
+EXECUTE FUNCTION trigger_set_timestamp();
+
+CREATE TRIGGER set_timestamp_site_settings
+BEFORE UPDATE ON site_settings
+FOR EACH ROW
+EXECUTE FUNCTION trigger_set_timestamp();
+
+CREATE TRIGGER set_timestamp_site_changelogs
+BEFORE UPDATE ON site_changelogs
+FOR EACH ROW
+EXECUTE FUNCTION trigger_set_timestamp();
+
+-- Initial data for roles (จำเป็นต้องมี)
+INSERT INTO roles (name) VALUES ('Member'), ('Translator'), ('Admin')
+ON CONFLICT (name) DO NOTHING;
+
+-- Initial data for site_settings (ตัวอย่าง)
+INSERT INTO site_settings (key, value, description) VALUES
+('site_name', '"InkRealm.co"', 'ชื่อเว็บไซต์หลัก'),
+('site_description', '"แพลตฟอร์มนิยายออนไลน์สำหรับนักอ่านและนักแปล"', 'คำอธิบายเว็บไซต์สำหรับ SEO'),
+('site_logo_url', 'null', 'URL ของโลโก้เว็บไซต์'),
+('site_favicon_url', 'null', 'URL ของ Favicon'),
+('allow_new_registrations', 'true', 'เปิด/ปิดการลงทะเบียนใหม่'),
+('allow_google_login', 'true', 'เปิด/ปิดการเข้าสู่ระบบด้วย Google'),
+('default_items_per_page', '20', 'จำนวนรายการต่อหน้าเริ่มต้นสำหรับการแบ่งหน้า'),
+('new_novel_default_chapter_status', '"เผยแพร่"', 'สถานะเริ่มต้นของตอนใหม่สำหรับนิยายที่สร้างใหม่'),
+('new_novel_default_chapter_access_level', '["ทุกคน"]', 'สิทธิ์การเข้าถึงตอนเริ่มต้นสำหรับนิยายที่สร้างใหม่')
+ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, description = EXCLUDED.description;
+
+```
+
+### 3.2 การตั้งค่า Supabase และ Environment Variables
+
+1.  **สร้าง Project ใน Supabase:**
+    *   ไปที่ [app.supabase.io](https://app.supabase.io) และสร้าง Project ใหม่
+    *   จดบันทึก Project URL และ `anon` public key (อยู่ใน Project Settings > API)
+
+2.  **ตั้งค่า Environment Variables (ในไฟล์ `.env` หรือ `.env.local` สำหรับ SvelteKit):**
+    ```bash
+    # URL ของ Supabase Project ของคุณ
+    PUBLIC_SUPABASE_URL="YOUR_SUPABASE_PROJECT_URL"
+
+    # Anon Key (Public) ของ Supabase Project ของคุณ
+    PUBLIC_SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_PUBLIC_KEY"
+
+    # Service Role Key (Secret - ใช้เฉพาะฝั่ง Server เช่น ใน Edge Functions หรือ Server Loaders/Actions)
+    # **ห้ามเปิดเผยคีย์นี้ในโค้ดฝั่ง Client เด็ดขาด**
+    SUPABASE_SERVICE_ROLE_KEY="YOUR_SUPABASE_SERVICE_ROLE_KEY"
+
+    # Base URL ของเว็บไซต์
+    # สำหรับ Local Development:
+    PUBLIC_BASE_URL="http://localhost:3000"
+    # สำหรับ Production (ตัวอย่าง):
+    # PUBLIC_BASE_URL="https://inkrealm.co"
+    ```
+    *   **สำคัญ:** เพิ่มไฟล์ `.env` หรือ `.env.local` เข้าใน `.gitignore` เพื่อไม่ให้ key ต่างๆ รั่วไหลไปยัง Git repository
+
+3.  **Run SQL Schema:**
+    *   นำ Code SQL จากข้อ 3.1 ไปรันใน SQL Editor ของ Supabase (Database > SQL Editor > New query) เพื่อสร้างตารางและข้อมูลเริ่มต้น
+
+4.  **ตั้งค่า Supabase Storage Buckets:**
+    *   ไปที่ Storage ใน Dashboard ของ Supabase
+    *   สร้าง Buckets ตามรายการด้านล่าง และตั้งค่า Policies ให้เหมาะสม:
+        *   `novel-covers`: สำหรับเก็บรูปปกนิยาย
+            *   **Policy:** Public Read Access (เพื่อให้ทุกคนเห็นปกได้)
+            *   ตัวอย่าง Policy (ตั้งค่าใน Bucket > Policies > `select` หรือสร้าง Policy ใหม่):
+                ```json
+                {
+                  "allowed_origins": ["*"],
+                  "allowed_methods": ["GET"],
+                  "cache_control": "public, max-age=31536000, immutable"
+                }
+                ```
+                (สำหรับการ `insert`, `update`, `delete` จะใช้ RLS หรือ Service Role Key ผ่าน Server)
+        *   `avatars`: สำหรับเก็บรูปโปรไฟล์ผู้ใช้
+            *   **Policy:** Public Read Access (คล้าย `novel-covers`)
+        *   `site_assets`: สำหรับเก็บโลโก้, favicon ของเว็บไซต์
+            *   **Policy:** Public Read Access (คล้าย `novel-covers`)
+        *   `chapter-text-files`: สำหรับ Batch Upload ไฟล์ .txt (ใช้เป็น Temporary Storage)
+            *   **Policy:** ควรตั้งค่าให้มีการจำกัดสิทธิ์การเข้าถึงอย่างเข้มงวด อาจจะอนุญาตให้อัปโหลดผ่าน authenticated users ที่มีบทบาท Translator/Admin และตั้งค่าให้ไฟล์ถูกลบอัตโนมัติหลังประมวลผลเสร็จสิ้น (ผ่าน Edge Function หรือ Logic ใน Application) หรือถ้าไม่สามารถลบอัตโนมัติได้ ให้เข้าถึงได้เฉพาะ Service Role Key
+
+5.  **ตั้งค่า Row-Level Security (RLS):**
+    *   RLS เป็นหัวใจสำคัญของความปลอดภัยใน Supabase
+    *   **ต้องเปิดใช้งาน RLS สำหรับทุกตารางที่มีข้อมูลสำคัญ** (เช่น `novels`, `chapters`, `profiles`, `mark_lines`)
+    *   สร้าง Policies สำหรับการ `SELECT`, `INSERT`, `UPDATE`, `DELETE` ให้สอดคล้องกับบทบาทและสิทธิ์ของผู้ใช้
+    *   **ตัวอย่าง RLS Policy สำหรับตาราง `novels` (แนวคิด):**
+        *   **SELECT:**
+            *   `Admin` สามารถ SELECT ได้ทุก records
+            *   `Translator` สามารถ SELECT ได้ทุก records ที่ `visibility` อนุญาต หรือเป็นเจ้าของ
+            *   `Member` สามารถ SELECT ได้ทุก records ที่ `visibility` อนุญาต
+            *   `Guest` (unauthenticated) สามารถ SELECT ได้เฉพาะ records ที่ `visibility` เป็น 'ทุกคน'
+        *   **INSERT:**
+            *   `Translator` และ `Admin` สามารถ INSERT ได้ (โดย `author_id` เป็น `auth.uid()`)
+        *   **UPDATE:**
+            *   `Admin` สามารถ UPDATE ได้ทุก records
+            *   `Translator` สามารถ UPDATE ได้เฉพาะ novels ที่ตนเองเป็น `author_id`
+        *   **DELETE:**
+            *   `Admin` สามารถ DELETE ได้ทุก records
+            *   `Translator` สามารถ DELETE ได้เฉพาะ novels ที่ตนเองเป็น `author_id`
+    *   **คุณต้องสร้าง Policy เหล่านี้เองใน SQL Editor หรือผ่าน UI ของ Supabase**
+
+## 4. โครงสร้าง URL ที่เป็นมิตรและการจัดการโดเมน
 
 *   **โครงสร้าง URL หลัก:**
     *   หน้ารวมนิยาย (หน้าแรก): `/`
@@ -40,918 +354,612 @@
     *   หน้าบุ๊คมาร์ค: `/bookmarks`
     *   แดชบอร์ดนักแปล: `/translator/dashboard`
     *   หน้าจัดการบรรทัดมาร์ค (นักแปล): `/translator/manage-marks/[novel_slug]`
-    *   แดชบอร์ดผู้ดูแลระบบ: `/admin/dashboard`
-    *   หน้ารายละเอียดในแดชบอร์ดผู้ดูแล: `/admin/dashboard/users`, `/admin/dashboard/categories` ฯลฯ
-
+    *   แดชบอร์ดผู้ดูแลระบบ: `/admin/dashboard` (และหน้ารายละเอียดภายใน เช่น `/admin/dashboard/users`)
 *   **การสร้าง Slug:**
-    *   **นิยาย:** สร้างอัตโนมัติจากชื่อเรื่อง (ตัวพิมพ์เล็ก, แทนที่ช่องว่างด้วยขีด, ตัดอักขระพิเศษ) ผู้สร้าง/Admin แก้ไขได้ (ตรวจสอบความซ้ำซ้อน)
-    *   **ตอนนิยาย:** ใช้ `chapter_number` โดยตรง
-
+    *   `novel_slug`: สร้างอัตโนมัติจากชื่อเรื่อง (ตัวพิมพ์เล็ก, แทนที่ช่องว่างด้วย `-`, ตัดอักขระพิเศษ) ผู้สร้าง/Admin แก้ไขได้ (มีการตรวจสอบความซ้ำซ้อนกับ `novels.slug`)
+    *   `chapter`: ใช้ `chapter_number` โดยตรง
 *   **การจัดการโดเมนและ Base URL:**
-    *   **Environment Variables:**
-        *   `PUBLIC_BASE_URL`: เช่น `https://inkrealm.co` หรือ `http://localhost:3000` (สำหรับการพัฒนา)
-        *   `PUBLIC_SUPABASE_URL`: URL ของ Supabase project
-        *   `PUBLIC_SUPABASE_ANON_KEY`: Anon key ของ Supabase project
-    *   **Internal Linking:** ใช้ Relative Paths หรืออ้างอิง `PUBLIC_BASE_URL`
+    *   ใช้ `PUBLIC_BASE_URL` จาก Environment Variable สำหรับสร้างลิงก์สมบูรณ์
+    *   ลิงก์ภายในใช้ Relative Paths หรือ `PUBLIC_BASE_URL`
 
-## 4. บทบาทผู้ใช้และสิทธิ์ (User Roles & Permissions)
+## 5. บทบาทผู้ใช้และสิทธิ์ (User Roles & Permissions)
 
-ควบคุมโดย Supabase Row-Level Security (RLS).
+ควบคุมโดย `profiles.role_id` และ Supabase Row-Level Security (RLS)
 
-| บทบาท         | คำอธิบายสิทธิ์                                                                                                                                                                                                                                                                                          |
-| :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **สมาชิก (Member)** | อ่านนิยาย, บุ๊คมาร์คตอน, แก้ไขโปรไฟล์ส่วนตัว แถบเครื่องมืออ่าน: สารบัญ, ปรับแต่งการแสดงผล, บุ๊คมาร์ค, สลับธีมเว็บ, เปิด/ปิดโหมดอ่านต่อเนื่อง, นำทางตอน                                                                                                                                                           |
-| **นักแปล (Translator)** | สิทธิ์ทั้งหมดของสมาชิก + เปิด/ปิด "โหมดนักแปล" สำหรับนิยายที่ตนมีสิทธิ์, เข้าถึงโหมดแปล, ใช้งานบรรทัดมาร์ค, สร้าง/จัดการนิยายและตอนของตนเอง (ผ่าน Modal), เข้าถึงแดชบอร์ดนักแปลและหน้าจัดการบรรทัดมาร์ค แถบเครื่องมือพิเศษในโหมดแปล: เพิ่ม "คัดลอกมาร์คทั้งหมด (ตอนปัจจุบัน)"                           |
-| **ผู้ดูแลระบบ (Admin)** | สิทธิ์ทั้งหมดของนักแปล + เข้าถึงแดชบอร์ดผู้ดูแลระบบ, จัดการผู้ใช้, ดูข้อมูลมาร์คทั้งหมด, จัดการเว็บไซต์, จัดการหมวดหมู่นิยาย, จัดการประกาศ, จัดการเวอร์ชัน                                                                                                                                                       |
+| บทบาท         | คำอธิบาย                                                                                                                                                                                                                                                          |
+| :------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **สมาชิก (Member)** | อ่านนิยาย, บุ๊คมาร์คตอน, แก้ไขโปรไฟล์ส่วนตัว. แถบเครื่องมืออ่าน: สารบัญ, ปรับแต่งการแสดงผล, บุ๊คมาร์ค, สลับธีม, โหมดอ่านต่อเนื่อง, นำทางตอน.                                                                                                                               |
+| **นักแปล (Translator)** | สิทธิ์ทั้งหมดของสมาชิก. +เปิด/ปิด "โหมดนักแปล" สำหรับนิยายที่ตนมีสิทธิ์, เข้าถึงโหมดแปล, ใช้งานบรรทัดมาร์ค, สร้าง/จัดการนิยายและตอนของตนเอง (ผ่าน Modal), เข้าถึงแดชบอร์ดนักแปลและหน้าจัดการบรรทัดมาร์ค. แถบเครื่องมือพิเศษในโหมดแปล: เพิ่ม "คัดลอกมาร์คทั้งหมด". |
+| **ผู้ดูแลระบบ (Admin)** | สิทธิ์ทั้งหมดของนักแปล. +เข้าถึงแดชบอร์ดผู้ดูแลระบบ, จัดการผู้ใช้, ดูข้อมูลมาร์คทั้งหมด, จัดการเว็บไซต์, จัดการหมวดหมู่, จัดการประกาศ, จัดการเวอร์ชัน.                                                                                                                       |
 
-## 5. การเข้าสู่ระบบ / ลงทะเบียน / ลืมรหัสผ่าน
+## 6. การเข้าสู่ระบบ / ลงทะเบียน / ลืมรหัสผ่าน (Authentication)
 
-*   **ความสามารถ:** ลงทะเบียน, เข้าสู่ระบบ (อีเมล/รหัสผ่าน, Google), ลืมรหัสผ่าน
-*   **การแสดงผล:** Modal เป็นหลัก; หน้าเว็บเฉพาะ (`/login`, `/register`, `/forgot-password`) สำหรับ Direct Access
-*   **การพัฒนา:** Supabase Auth, Felte + Zod, Skeleton UI
-*   **การแจ้งเตือน (Toast):**
-    *   ลงทะเบียนสำเร็จ: "ลงทะเบียนบัญชีผู้ใช้สำเร็จ กรุณาตรวจสอบอีเมลเพื่อยืนยันบัญชี"
-    *   เข้าสู่ระบบสำเร็จ: "เข้าสู่ระบบสำเร็จ ยินดีต้อนรับ!"
-    *   ส่งคำขอรีเซ็ตรหัสผ่าน: "คำขอรีเซ็ตรหัสผ่านถูกส่งไปยังอีเมลของคุณแล้ว กรุณาตรวจสอบกล่องจดหมาย"
-    *   ออกจากระบบ: "ออกจากระบบเรียบร้อยแล้ว"
+*   **UI:** แสดงผลผ่าน Modal เป็นหลัก (เรียกจาก Navbar) และมีหน้าเฉพาะ (`/login`, `/register`, `/forgot-password`)
+*   **Tech Stack:** Supabase Auth, Felte + Zod (สำหรับ Validation), Skeleton UI (Modal, Input, Button)
+*   **Toast Notifications (มุมล่างขวา):**
+    *   ลงทะเบียนสำเร็จ: `Toast: "ลงทะเบียนเรียบร้อย กรุณายืนยันอีเมลของคุณ"`
+    *   เข้าสู่ระบบสำเร็จ: `Toast: "เข้าสู่ระบบสำเร็จ ยินดีต้อนรับ!"`
+    *   คำขอรีเซ็ตรหัสผ่านถูกส่ง: `Toast: "คำขอรีเซ็ตรหัสผ่านถูกส่งไปยังอีเมลของคุณแล้ว"`
+    *   ยืนยันอีเมล (เมื่อคลิกลิงก์ในอีเมลแล้วกลับมา): `Toast: "ยืนยันอีเมลสำเร็จแล้ว คุณสามารถเข้าสู่ระบบได้เลย"`
+    *   ข้อผิดพลาด: `Toast: "เกิดข้อผิดพลาด: [รายละเอียดข้อผิดพลาดสั้นๆ]"`
 
-## 6. โครงสร้างแถบนำทาง (Navbar Structure)
+## 7. โครงสร้างแถบนำทาง (Navbar Structure)
 
-*   **ความสามารถ:** แสดงเมนูตามบทบาท (Dynamic Menu), Responsive
-*   **ตัวอย่างเมนู:**
-    *   **Guest:** โลโก้, ปุ่มสลับธีม (`Sun`/`Moon`), ปุ่ม "เข้าสู่ระบบ" (เปิด Login Modal)
-    *   **Member:** โลโก้, "หน้าแรก", "บุ๊คมาร์ค", ปุ่มสลับธีม, โปรไฟล์ (Dropdown: ชื่อ, สิทธิ์, "หน้าโปรไฟล์", "ออกจากระบบ")
-    *   **Translator:** เหมือน Member + "แดชบอร์ดนักแปล"
-    *   **Admin:** เหมือน Translator + "แดชบอร์ดผู้ดูแลระบบ"
-*   **การพัฒนา:** SvelteKit, Skeleton UI, TailwindCSS, Lucide-Svelte (สำหรับไอคอน)
+*   **ความสามารถ:** แสดงเมนูตามบทบาทผู้ใช้ (Dynamic), Responsive
+*   **Tech Stack:** SvelteKit (Layout), Skeleton UI (App Bar, Menu, Button), TailwindCSS
+*   **โลโก้:** (ซ้ายสุด) คลิกแล้วไปหน้าแรก (`/`)
+*   **ปุ่มสลับธีม:** (ไอคอน `Sun` / `Moon` จาก Lucide-Svelte)
+*   **เมนู (เรียงจากซ้ายไปขวาหลังโลโก้):**
 
-## 7. รายละเอียดหน้าเว็บไซต์, Modals, และการจัดการเนื้อหา
+    | ผู้ใช้         | เมนู                                                                                                                                                                                             |
+    | :------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+    | **Guest**      | (โลโก้), ปุ่มสลับธีม, ปุ่ม "เข้าสู่ระบบ" (เปิด Login Modal)                                                                                                                                         |
+    | **Member**     | (โลโก้), "หน้าแรก" (`/`), "บุ๊คมาร์ค" (`/bookmarks`), ปุ่มสลับธีม, โปรไฟล์ (Dropdown: แสดงชื่อ & สิทธิ์, ลิงก์ "หน้าโปรไฟล์" (`/profile`), "ออกจากระบบ")                                                     |
+    | **Translator** | เหมือน Member เพิ่ม: "แดชบอร์ดนักแปล" (`/translator/dashboard`)                                                                                                                                     |
+    | **Admin**      | เหมือน Translator เพิ่ม: "แดชบอร์ดผู้ดูแลระบบ" (`/admin/dashboard`)                                                                                                                                |
 
-### 7.1 หน้าแรก (Home Page - `/`)
+## 8. รายละเอียดหน้าเว็บไซต์, Modals, และการจัดการเนื้อหา
 
-*   **ส่วนแสดงประกาศ:** แสดงประกาศที่ Active และตรงตามสิทธิ์ผู้ใช้ (แบนเนอร์บนสุด, มีปุ่มปิด `X`)
+---
+
+### 8.1 หน้าแรก (Home Page - `/`)
+
+*   **ส่วนแสดงประกาศ (Announcements Display Area):**
+    *   **UI:** แบนเนอร์ด้านบนสุดของเนื้อหาหลัก (ใต้ Navbar), มีปุ่มปิดประกาศ (ไอคอน `X` จาก Lucide-Svelte)
+    *   **Logic:** ดึงข้อมูลจาก `announcements` table. แสดงหาก `is_active = true`, อยู่ใน `start_date` ถึง `end_date`, `target_pages` มี 'หน้าแรก', และ `target_roles` ตรงกับบทบาทผู้ใช้ปัจจุบัน
 *   **ส่วนเครื่องมือหลัก:**
-    *   ช่องค้นหานิยาย: Input สำหรับคำค้น
-    *   ฟิลเตอร์หมวดหมู่: Dropdown (ดึงจาก `categories` table)
-    *   ฟิลเตอร์สถานะนิยาย: Dropdown ("ต่อเนื่อง", "จบแล้ว")
-    *   ปุ่มสร้างนิยาย (นักแปล/Admin): "[+] สร้างนิยาย" (เปิด Modal 7.1.1)
-*   **การแสดงรายการนิยาย:** Grid Layout (รูปปก 3:4, ชื่อเรื่อง, จำนวนตอน), Mobile 2 คอลัมน์
-*   **ระบบแบ่งหน้า (Pagination)**
-*   **การทำงานเริ่มต้น (Guest):** แสดง Login Modal อัตโนมัติเมื่อเข้าชมครั้งแรก (อาจมีตัวเลือก "ข้ามไปก่อน")
-    *   **Toast:** (ถ้ามีการแจ้งเตือน) "กรุณาเข้าสู่ระบบเพื่อประสบการณ์การใช้งานเต็มรูปแบบ"
+    *   **ช่องค้นหานิยาย:** `Input` จาก Skeleton UI, placeholder "ค้นหานิยาย..."
+    *   **ฟิลเตอร์หมวดหมู่ (Category Filter):** `Select` (Dropdown) จาก Skeleton UI. รายการหมวดหมู่ดึงจาก `categories` table
+    *   **ฟิลเตอร์สถานะนิยาย (Novel Status Filter):** `Select` (Dropdown) จาก Skeleton UI. ตัวเลือก: "ทั้งหมด", "ต่อเนื่อง", "จบแล้ว"
+    *   **ปุ่มสร้างนิยาย (Create Novel Button):** (สำหรับ Translator/Admin)
+        *   **UI:** ปุ่ม "[+ สร้างนิยาย]" (ไอคอน `PlusSquare` จาก Lucide-Svelte) จัดวางใกล้เครื่องมือค้นหา
+        *   **Action:** คลิกเปิด "Modal สร้างนิยาย" (ดูข้อ 8.1.1)
+*   **การแสดงรายการนิยาย:**
+    *   **UI:** Grid Layout (Skeleton UI Card). การ์ดแสดง: รูปปก (อัตราส่วน 3:4), ชื่อเรื่อง, จำนวนตอน (ดึงจาก `novels.total_chapters` หรือ `COUNT(chapters)`). Mobile: 2 คอลัมน์, Desktop: 3-5 คอลัมน์
+    *   **Database:** Query จาก `novels` table, JOIN `categories` (ถ้าจำเป็น), Filter ตามคำค้นหา, หมวดหมู่, สถานะ
+*   **ระบบแบ่งหน้า (Pagination):**
+    *   **UI:** Skeleton UI Pager. แสดงเมื่อผลลัพธ์มีมากกว่าจำนวนที่ตั้งค่าไว้ต่อหน้า (จาก `site_settings.default_items_per_page`)
+*   **การทำงานเริ่มต้น (สำหรับ Guest):**
+    *   หากเป็น Guest ที่เข้าชมครั้งแรก (อาจใช้ `localStorage` เช็ค) แสดง Login Modal อัตโนมัติ
+*   **Tech Stack:** Supabase (query `novels`, `categories`, `announcements`), Skeleton UI (Card, Input, Select, Button, Pager)
 
-#### 7.1.1 Modal สร้างนิยาย (Create Novel Modal)
+---
 
-*   **เรียกใช้งาน:** ปุ่ม "[+] สร้างนิยาย" บนหน้าแรก
-*   **UI ภายใน Modal:**
-    *   หัวเรื่อง: "สร้างนิยายใหม่"
-    *   ฟอร์ม:
-        *   ชื่อเรื่อง (Title): Input text, จำเป็น
-        *   คำโปรย (Synopsis): Textarea
-        *   หมวดหมู่ (Category): Dropdown (จาก `categories`)
-        *   รูปปกนิยาย (Cover Image): อัปโหลด (Crop 3:4, ย่อขนาดไฟล์ < 3MB อัตโนมัติ)
-        *   ภาษาต้นฉบับ (Original Language): Dropdown ("จีน (zh)", "อังกฤษ (en)", "ไทย (th)")
-        *   สิทธิ์ในการมองเห็นนิยาย (Novel Visibility): Checkbox (เลือกหลายอัน: "ทุกคน", "เฉพาะสมาชิก", "เฉพาะนักแปล")
+#### 8.1.1 Modal สร้างนิยาย (Create Novel Modal)
+
+*   **การเรียกใช้งาน:** คลิกปุ่ม "[+ สร้างนิยาย]" บนหน้าแรก
+*   **UI ภายใน Modal (Skeleton UI Modal):**
+    *   **หัวเรื่อง Modal:** "สร้างนิยายใหม่"
+    *   **ฟอร์ม (Felte + Zod validation):**
+        *   **ชื่อเรื่อง (Title):** `Input text`, จำเป็น (`required`)
+        *   **คำโปรย (Synopsis):** `Textarea` (รองรับ Rich Text Editor เช่น TipTap หรือ Markdown editor ที่แปลงเป็น HTML ก่อนบันทึก)
+        *   **หมวดหมู่ (Category):** `Select` (Dropdown) ดึงจาก `categories` table (`required`)
+        *   **รูปปกนิยาย (Cover Image):** `File Input` พื้นที่อัปโหลดรูปใหม่
+            *   **เครื่องมือ Crop:** JS library (เช่น Cropper.js) บังคับอัตราส่วน 3:4
+            *   **ขนาดไฟล์:** จัดการขนาดไฟล์ไม่เกิน 3MB (ย่อขนาดอัตโนมัติฝั่ง Client หรือ Server)
+        *   **ภาษาต้นฉบับ (Original Language):** `Select` (Dropdown) ตัวเลือก: "จีน (zh)", "อังกฤษ (en)", "ไทย (th)" (`required`)
+        *   **สิทธิ์ในการมองเห็นนิยาย (Novel Visibility):** `Checkbox Group` (Skeleton UI) เลือกได้หลายอัน: "ทุกคน", "เฉพาะสมาชิก", "เฉพาะนักแปล" (ค่าเริ่มต้น: "ทุกคน")
         *   **การตั้งค่าเริ่มต้นสำหรับตอนใหม่ของนิยายนี้:**
-            *   สถานะเริ่มต้นของตอน: Radio Group ("เผยแพร่" (ค่าเริ่มต้น), "ฉบับร่าง")
-            *   สิทธิ์การเข้าถึงตอนเริ่มต้น: Checkbox (เลือกหลายอัน: "ทุกคน" (ค่าเริ่มต้น), "เฉพาะสมาชิก", "เฉพาะนักแปล")
-*   **ปุ่มดำเนินการ:**
-    *   "เผยแพร่นิยาย": **Toast:** "สร้างนิยาย '[ชื่อนิยาย]' และเผยแพร่สำเร็จแล้ว!"
-    *   "บันทึกเป็นฉบับร่าง": **Toast:** "สร้างนิยาย '[ชื่อนิยาย]' เป็นฉบับร่างสำเร็จแล้ว"
-    *   "ยกเลิก"
+            *   **สถานะเริ่มต้นของตอน:** `Radio Group` (Skeleton UI) "เผยแพร่" (ค่าเริ่มต้น), "ฉบับร่าง"
+            *   **สิทธิ์การเข้าถึงตอนเริ่มต้น:** `Checkbox Group` "ทุกคน" (ค่าเริ่มต้น), "เฉพาะสมาชิก", "เฉพาะนักแปล"
+    *   **ปุ่มดำเนินการ (Skeleton UI Button):**
+        *   "เผยแพร่นิยาย":
+            *   **Action:** สร้าง record ใน `novels` (status: 'ต่อเนื่อง', visibility, default chapter settings ตามที่เลือก), อัปโหลดปกไป `novel-covers` bucket, สร้าง record ใน `novel_versions`
+            *   **Toast:** `"[ชื่อนิยาย]' ถูกสร้างและเผยแพร่เรียบร้อยแล้ว!"` (สีเขียว)
+        *   "บันทึกเป็นฉบับร่าง":
+            *   **Action:** คล้าย "เผยแพร่" แต่ตั้ง `novels.status` เป็น 'ฉบับร่าง' (หรือมี field แยกสำหรับ draft status ของ novel เอง) หรือตั้ง `visibility` เป็นแบบจำกัด
+            *   **Toast:** `"[ชื่อนิยาย]' ถูกบันทึกเป็นฉบับร่างแล้ว"` (สีเหลือง/ส้ม)
+        *   "ยกเลิก": ปิด Modal
+*   **Database:** `INSERT INTO novels`, `INSERT INTO novel_versions`. อัปโหลดไฟล์ไป Supabase Storage (`novel-covers`).
 
-### 7.2 หน้าข้อมูลนิยายและสารบัญ (Novel Detail Page - `/novels/[novel_slug]`)
+---
 
-*   **ส่วนแสดงประกาศ:** แสดงประกาศที่ Active และตรงตามสิทธิ์/เป้าหมาย
-*   **ส่วนข้อมูลนิยาย:** รูปปก, ชื่อเรื่อง, ผู้แต่ง, หมวดหมู่, คำโปรย, จำนวนตอน, สถานะ, ภาษาต้นฉบับ (`<html lang="...">`)
-    *   (นักแปล/Admin เจ้าของ) ปุ่มสลับ "โหมดนักแปล": Toggle Switch "เปิด/ปิดโหมดนักแปล" (บันทึกสถานะเฉพาะผู้ใช้และนิยายนี้)
-        *   **Toast (เมื่อเปลี่ยนสถานะ):** "เปิดโหมดนักแปลสำหรับนิยาย '[ชื่อนิยาย]' แล้ว" / "ปิดโหมดนักแปลสำหรับนิยาย '[ชื่อนิยาย]' แล้ว"
-*   **ปุ่มจัดการนิยาย (ผู้สร้าง/Admin):**
-    *   "แก้ไขข้อมูลนิยาย": เปิด Modal 7.2.1
-    *   "ลบนิยาย": Modal ยืนยัน "คุณแน่ใจหรือไม่ว่าต้องการลบนิยาย '[ชื่อนิยาย]'? การกระทำนี้ไม่สามารถย้อนกลับได้"
-        *   **Toast (เมื่อลบสำเร็จ):** "ลบนิยาย '[ชื่อนิยาย]' เรียบร้อยแล้ว"
-*   **ส่วนเพิ่มตอน (ผู้สร้าง/Admin):**
-    *   ปุ่ม: "เพิ่มตอนด้วย .txt" (เปิด Modal 7.2.2), "เพิ่มตอน" (เปิด Modal 7.2.3)
-*   **ส่วนสารบัญ:**
-    *   Collapse/Accordion, ปรับจำนวนตอนต่อกลุ่ม (10, 20, 25, 30, 50 (ค่าเริ่มต้น), 100), กลุ่มแรกขยายเสมอ
-    *   รายการตอน:
-        *   (ทุกคน): ไอคอนบุ๊คมาร์ค (`Bookmark`), ชื่อตอน, สถานะการอ่าน (PC: พื้นหลัง+`Eye`+"อ่านแล้ว"; Mobile: พื้นหลัง+`Eye`)
-        *   (นักแปล/Admin เจ้าของ): ไอคอนสถานะตอน (`CircleSlash` / `CheckCircle2`), ปุ่ม "แก้ไขตอน" (`Edit3`), ปุ่ม "ลบตอน" (`Trash2`), ปุ่ม "คัดลอกมาร์คทั้งหมด" (`CopyCheck`) (สำหรับตอนนั้นๆ)
-            *   **Toast (ลบตอน):** "ลบตอน '[ชื่อตอน]' เรียบร้อยแล้ว"
-            *   **Toast (คัดลอกมาร์คตอน):** "คัดลอกบรรทัดที่มาร์คทั้งหมดของตอน '[ชื่อตอน]' ไปยังคลิปบอร์ดแล้ว"
+### 8.2 หน้าข้อมูลนิยายและสารบัญ (Novel Detail Page - `/novels/[novel_slug]`)
 
-#### 7.2.1 Modal แก้ไขข้อมูลนิยาย (Edit Novel Modal)
+*   **การดึงข้อมูล:** ใช้ `novel_slug` จาก URL เพื่อ query ข้อมูลจาก `novels` table และ `chapters` table ที่เกี่ยวข้อง
+*   **ส่วนแสดงประกาศ:** คล้ายหน้าแรก แต่ `target_pages` อาจเป็น 'หน้านิยาย (ทุกเรื่อง)' หรือ 'หน้านิยาย (เฉพาะเรื่องนี้):[novel_slug]'
+*   **ส่วนข้อมูลนิยาย (Novel Information Section):**
+    *   **UI:** แสดงรูปปก (จาก `novels.cover_image_url`), ชื่อเรื่อง (`novels.title`), ผู้แต่ง (จาก `novels.author_id` JOIN `profiles.display_name`), หมวดหมู่ (จาก `novels.category_id` JOIN `categories.name`), คำโปรย (`novels.synopsis` - แสดงผล Rich Text), จำนวนตอนทั้งหมด (`novels.total_chapters`), สถานะนิยาย (`novels.status`), ภาษาต้นฉบับ (`novels.original_language` พร้อม `lang` attribute ใน HTML)
+    *   **(สำหรับนักแปล/Admin ที่มีสิทธิ์ในนิยาย): ปุ่มสลับ "โหมดนักแปล" (Translator Mode Toggle):**
+        *   **UI:** `Toggle Switch` (Skeleton UI) ข้อความ "เปิด/ปิดโหมดนักแปล"
+        *   **Logic:** สถานะ (เปิด/ปิด) บันทึกใน `localStorage` หรือ `user_settings` table (scoped by user_id and novel_id). **ไม่เปลี่ยนโหมดจากหน้าอ่าน ต้องกลับมาหน้านี้เปลี่ยน**
+*   **ปุ่มจัดการนิยาย (สำหรับผู้สร้างนิยาย หรือ Admin):**
+    *   **ปุ่ม "แก้ไขข้อมูลนิยาย":** (ไอคอน `Edit3` จาก Lucide-Svelte)
+        *   **Action:** เปิด "Modal แก้ไขข้อมูลนิยาย" (ดูข้อ 8.2.1)
+    *   **ปุ่ม "ลบนิยาย":** (ไอคอน `Trash2` จาก Lucide-Svelte, สีแดง)
+        *   **Action:** เปิด Modal ยืนยัน (Skeleton UI Confirm) "คุณแน่ใจหรือไม่ว่าต้องการลบนิยาย '[ชื่อนิยาย]'? การกระทำนี้ไม่สามารถย้อนกลับได้ และจะลบตอนทั้งหมดของนิยายนี้ด้วย"
+        *   **ยืนยัน:** `DELETE FROM novels WHERE id = [novel_id]` (RLS ป้องกันการลบโดยไม่ได้รับอนุญาต)
+        *   **Toast (สำเร็จ):** `"ลบนิยาย '[ชื่อนิยาย]' เรียบร้อยแล้ว"` (สีแดง)
+        *   **Toast (ล้มเหลว):** `"ไม่สามารถลบนิยายได้: [เหตุผล]"` (สีแดง)
+*   **ส่วนเพิ่มตอน (Add Chapter Section - สำหรับผู้สร้าง/Admin):**
+    *   **UI:** จัดวางด้านขวาของข้อมูลนิยาย หรือใกล้สารบัญ
+    *   **ปุ่ม "เพิ่มตอนด้วย .txt":** (ไอคอน `FileText` จาก Lucide-Svelte) เปิด "Modal เพิ่มตอนด้วย .txt" (ดูข้อ 8.2.2)
+    *   **ปุ่ม "เพิ่มตอนใหม่":** (ไอคอน `PlusCircle` จาก Lucide-Svelte) เปิด "Modal เพิ่ม/แก้ไขตอน" (ดูข้อ 8.2.3, ในโหมด "เพิ่มตอน")
+*   **ส่วนสารบัญ (Table of Contents Section):**
+    *   **UI:** `Accordion` (Skeleton UI). ปรับจำนวนตอนต่อกลุ่ม (Dropdown: 10, 20, 25, 30, 50 (ค่าเริ่มต้น), 100 ตอน). กลุ่มแรกขยายเสมอ.
+    *   **รายการตอน (แต่ละแถว):**
+        *   **(ทุกคน):**
+            *   ไอคอนบุ๊คมาร์ค (มุมซ้ายบนของชื่อตอน, ไอคอน `Bookmark` จาก Lucide-Svelte, เติมสี/เปลี่ยนไอคอนถ้าบุ๊คมาร์คแล้ว)
+            *   ชื่อตอน (`chapters.title`) - เป็นลิงก์ไปยังหน้าอ่าน `/novels/[novel_slug]/chapter/[chapter_number]`
+            *   สถานะการอ่าน: (PC) เปลี่ยนสีพื้นหลัง + ไอคอน `Eye` + "อ่านแล้ว"; (Mobile) เปลี่ยนสีพื้นหลัง + ไอคอน `Eye`. (เช็คจาก `user_read_progress` table หรือ `localStorage`)
+        *   **(นักแปล/Admin ที่มีสิทธิ์):** เพิ่มเติมจากด้านบน:
+            *   ไอคอนสถานะตอน: ไอคอน `CheckCircle` (เผยแพร่) หรือ `Edit` (ร่าง) จาก Lucide-Svelte.
+            *   ปุ่ม "แก้ไขตอน": (ไอคอน `Edit` จาก Lucide-Svelte) เปิด "Modal เพิ่ม/แก้ไขตอน" (ข้อ 8.2.3, ในโหมด "แก้ไขตอน")
+            *   ปุ่ม "ลบตอน": (ไอคอน `Trash` จาก Lucide-Svelte, สีแดง) เปิด Modal ยืนยัน "คุณแน่ใจหรือไม่ว่าต้องการลบตอน '[ชื่อตอน]'?"
+                *   **ยืนยัน:** `DELETE FROM chapters WHERE id = [chapter_id]`. อัปเดต `novels.total_chapters`.
+                *   **Toast (สำเร็จ):** `"ลบตอน '[ชื่อตอน]' เรียบร้อยแล้ว"`
+            *   ปุ่ม "คัดลอกมาร์คทั้งหมด": (ไอคอน `CopyCheck` จาก Lucide-Svelte) (เฉพาะเมื่อ "โหมดนักแปล" สำหรับนิยายนี้เปิดอยู่ และผู้ใช้เป็นนักแปลของตอนนี้)
+                *   **Action:** Query `mark_lines` สำหรับตอนนี้และ user ปัจจุบัน, คัดลอกเลขบรรทัดที่มาร์คทั้งหมดไปยัง Clipboard.
+                *   **Toast:** `"คัดลอกมาร์คของตอน '[ชื่อตอน]' ทั้งหมดแล้ว"`
+*   **Tech Stack:** Supabase (query `novels`, `chapters`, `profiles`, `categories`), Skeleton UI (Accordion, Button, Toggle, Modal), Svelte logic
 
-*   **UI:** ฟอร์มเติมข้อมูลปัจจุบัน
-*   **ฟิลด์แก้ไขได้:** ชื่อเรื่อง, คำโปรย, หมวดหมู่, รูปปก (Crop 3:4, <3MB), ภาษาต้นฉบับ, สถานะนิยาย (Radio: "ต่อเนื่อง", "จบแล้ว", "ยุติการลง"), สิทธิ์การมองเห็น (Checkbox)
-*   **ค่าเริ่มต้นสำหรับตอนใหม่ของนิยายนี้:** สถานะตอน (Radio), สิทธิ์เข้าถึงตอน (Checkbox)
-*   **ปุ่ม:**
-    *   "บันทึกการเปลี่ยนแปลง": **Toast:** "บันทึกข้อมูลนิยาย '[ชื่อนิยาย]' สำเร็จแล้ว" (สร้าง `novel_versions` ใหม่)
-    *   "ยกเลิก"
-    *   "ลบนิยาย" (ภายใน Modal, Modal ยืนยันอีกครั้ง): **Toast:** "ลบนิยาย '[ชื่อนิยาย]' เรียบร้อยแล้ว"
+---
 
-#### 7.2.2 Modal เพิ่มตอนด้วย .txt (Batch Upload Modal)
+#### 8.2.1 Modal แก้ไขข้อมูลนิยาย (Edit Novel Modal)
 
-*   **ความสามารถ:** Drag & Drop, Max 500 ไฟล์, Sort ชื่อไฟล์, ชื่อไฟล์เป็นชื่อตอน, เชื่อม `novel_id`, จัดการไฟล์ซ้ำ (Overwrite/Skip), Progress Bar
-*   **Toast (เมื่อสำเร็จ):** "อัปโหลดตอนด้วย .txt สำเร็จ: เพิ่ม X ตอน, เขียนทับ Y ตอน, ข้าม Z ตอน"
-*   **การทำงานเบื้องหลัง:** สร้าง `mark_lines` ว่างๆ และ `chapter_versions` เริ่มต้นอัตโนมัติ
+*   **การเรียกใช้งาน:** คลิกปุ่ม "แก้ไขข้อมูลนิยาย" ในหน้าข้อมูลนิยาย
+*   **UI ภายใน Modal:** ฟอร์มจะถูกเติมด้วยข้อมูลปัจจุบันของนิยาย (`novels` table)
+    *   **หัวเรื่อง Modal:** "แก้ไขข้อมูลนิยาย: [ชื่อนิยายปัจจุบัน]"
+    *   **ฟิลด์ที่แก้ไขได้ (Felte + Zod):** ชื่อเรื่อง, คำโปรย (Rich Text Editor), หมวดหมู่ (Dropdown), รูปปก (อัปโหลดใหม่ + Crop 3:4, ย่อขนาดถ้าเกิน 3MB), ภาษาต้นฉบับ (Dropdown: zh, en, th), สถานะนิยาย (`Radio Group`: "ต่อเนื่อง", "จบแล้ว", "ยุติการลง"), สิทธิ์ในการมองเห็นนิยาย (`Checkbox Group`: "ทุกคน", "เฉพาะสมาชิก", "เฉพาะนักแปล")
+    *   **ค่าเริ่มต้นสำหรับการสร้างตอนใหม่ (Default Settings for New Chapters of this Novel):**
+        *   **สถานะเริ่มต้นของตอน:** `Radio Group` ("เผยแพร่", "ฉบับร่าง")
+        *   **สิทธิ์การเข้าถึงตอนเริ่มต้น:** `Checkbox Group` ("ทุกคน", "เฉพาะสมาชิก", "เฉพาะนักแปล")
+        *   **คำอธิบาย:** "ค่าเริ่มต้นของเว็บสำหรับตอนใหม่คือ 'เผยแพร่' และ 'ทุกคน'. คุณสามารถปรับค่านี้สำหรับนิยายเรื่องนี้ได้ที่นี่"
+    *   **ปุ่มดำเนินการ:**
+        *   "บันทึกการเปลี่ยนแปลง":
+            *   **Action:** `UPDATE novels SET ... WHERE id = [novel_id]`. อัปโหลดปกใหม่ (ถ้ามี). สร้าง record ใหม่ใน `novel_versions` หากมีการเปลี่ยนแปลงข้อมูลสำคัญ (เช่น title, synopsis, category, cover).
+            *   **Toast:** `"บันทึกข้อมูลนิยาย '[ชื่อนิยาย]' สำเร็จแล้ว"`
+        *   "ยกเลิก"
+        *   ปุ่ม "ลบนิยาย" (ภายใน Modal, ไอคอน `Trash2` สีแดง):
+            *   **Action:** เหมือนปุ่มลบนิยายด้านนอก (เปิด Modal ยืนยันอีกชั้น)
+            *   **Toast (สำเร็จ):** `"ลบนิยาย '[ชื่อนิยาย]' เรียบร้อยแล้ว"` (และปิด Modal แก้ไข)
+*   **Database:** `UPDATE novels`, `INSERT INTO novel_versions`, Supabase Storage (`novel-covers`)
 
-#### 7.2.3 Modal เพิ่ม/แก้ไขตอน (Create/Edit Chapter Modal)
+---
 
+#### 8.2.2 Modal เพิ่มตอนด้วย .txt (Batch Upload Modal)
+
+*   **การเรียกใช้งาน:** คลิกปุ่ม "เพิ่มตอนด้วย .txt" ในหน้าข้อมูลนิยาย
+*   **UI ภายใน Modal:**
+    *   **หัวเรื่อง Modal:** "เพิ่มหลายตอนด้วยไฟล์ .txt สำหรับนิยาย: [ชื่อนิยาย]"
+    *   **พื้นที่ Drag & Drop ไฟล์:** หรือปุ่ม "เลือกไฟล์" (`File Input` `multiple`)
+    *   **ข้อจำกัด:** "รองรับสูงสุด 500 ไฟล์. ชื่อไฟล์จะถูกใช้เป็นชื่อตอน. ไฟล์ที่มีชื่อซ้ำจะถูกถามว่าจะเขียนทับหรือข้าม."
+    *   **ตัวเลือก (Checkbox/Radio):** "หากไฟล์ซ้ำ: เขียนทับ / ข้าม"
+    *   **Progress Bar:** แสดงความคืบหน้าการอัปโหลดและประมวลผล
+    *   **ปุ่มดำเนินการ:** "เริ่มอัปโหลด", "ยกเลิก"
+*   **Logic:**
+    1.  ผู้ใช้อัปโหลดไฟล์ .txt (เก็บใน `chapter-text-files` bucket ชั่วคราว)
+    2.  Client หรือ Edge Function ประมวลผล:
+        *   อ่านเนื้อหาจากแต่ละไฟล์.
+        *   ใช้ชื่อไฟล์เป็น `chapters.title`.
+        *   กำหนด `chapter_number` (อาจเรียงตามชื่อไฟล์ หรือให้ผู้ใช้จัดลำดับก่อนอัปโหลด).
+        *   ตรวจสอบ `chapter_number` และ `title` ซ้ำกับที่มีอยู่แล้วในนิยายนี้.
+        *   `INSERT` หรือ `UPDATE` ข้อมูลใน `chapters` table.
+        *   ดึงค่า `default_chapter_status` และ `default_chapter_access_level` จาก `novels` table มาใช้สำหรับตอนใหม่.
+        *   สร้าง record ว่างใน `mark_lines` สำหรับแต่ละตอนใหม่และ `author_id` ของนิยาย.
+        *   สร้าง record เริ่มต้นใน `chapter_versions` สำหรับแต่ละตอนใหม่.
+        *   ลบไฟล์ .txt ออกจาก `chapter-text-files` bucket หลังประมวลผล.
+*   **Toast (เมื่อสำเร็จ):**
+    *   `"เพิ่มตอนสำเร็จ: เพิ่ม X ตอน, เขียนทับ Y ตอน, ข้าม Z ตอน"`
+*   **Database:** `INSERT/UPDATE chapters`, `INSERT INTO mark_lines` (ว่าง), `INSERT INTO chapter_versions`. Supabase Storage (`chapter-text-files` ชั่วคราว).
+
+---
+
+#### 8.2.3 Modal เพิ่ม/แก้ไขตอน (Create/Edit Chapter Modal)
+
+*   **การเรียกใช้งาน:**
+    *   **เพิ่มตอน:** จากปุ่ม "เพิ่มตอนใหม่" ในหน้าข้อมูลนิยาย
+    *   **แก้ไขตอน:** จากปุ่ม "แก้ไขตอน" ในส่วนสารบัญ
+*   **UI ภายใน Modal:**
+    *   **หัวเรื่อง:** "เพิ่มตอนใหม่สำหรับ: [ชื่อนิยาย]" หรือ "แก้ไขตอน: [ชื่อตอนปัจจุบัน]"
+    *   **ฟอร์ม (Felte + Zod):**
+        *   **เลขที่ตอน (Chapter Number):** (สำหรับ "เพิ่มตอนใหม่") `Input number`. ถ้า "แก้ไขตอน" จะเป็น `Read-only` หรือซ่อนไว้. (ต้องตรวจสอบไม่ให้ซ้ำกับ `chapter_number` ที่มีอยู่แล้วในนิยายนี้)
+        *   **ชื่อตอน (Chapter Title):** `Input text`, จำเป็น
+        *   **เนื้อหา (Content):** `Rich Text Editor` (เช่น TipTap)
+            *   **ฟอนต์:** Sarabun เป็นหลัก
+            *   **เครื่องมือ:** ตัวหนา, ตัวเอียง, ขีดเส้นใต้, รายการ, ลิงก์
+            *   **การวาง:** รองรับการคัดลอก/วางจาก Word โดยพยายามรักษาการจัดรูปแบบพื้นฐาน
+        *   **สถานะตอน (Chapter Status):** `Radio Group` ("เผยแพร่", "ฉบับร่าง"). ค่าเริ่มต้นมาจาก `novels.default_chapter_status` (สำหรับตอนใหม่) หรือค่าปัจจุบัน (สำหรับแก้ไข)
+        *   **สิทธิ์การเข้าถึงตอน (Chapter Access Level):** `Checkbox Group` ("ทุกคน", "เฉพาะสมาชิก", "เฉพาะนักแปล"). ค่าเริ่มต้นมาจาก `novels.default_chapter_access_level` (สำหรับตอนใหม่) หรือค่าปัจจุบัน (สำหรับแก้ไข)
+    *   **ปุ่มดำเนินการ:**
+        *   **(เพิ่มตอนใหม่):** "เผยแพร่ตอน", "บันทึกเป็นฉบับร่าง"
+            *   **Action (เผยแพร่):** `INSERT INTO chapters` (status: 'เผยแพร่'). สร้าง `mark_lines` ว่าง, สร้าง `chapter_versions` เริ่มต้น. อัปเดต `novels.total_chapters`.
+            *   **Action (ร่าง):** `INSERT INTO chapters` (status: 'ฉบับร่าง'). สร้าง `mark_lines` ว่าง, สร้าง `chapter_versions` เริ่มต้น. อัปเดต `novels.total_chapters`.
+            *   **Toast:** `"บันทึกตอน '[ชื่อตอน]' และเผยแพร่เรียบร้อยแล้ว"` หรือ `"บันทึกตอน '[ชื่อตอน]' เป็นฉบับร่างเรียบร้อยแล้ว"`
+        *   **(แก้ไขตอน):** "บันทึกการเปลี่ยนแปลง"
+            *   **Action:** `UPDATE chapters SET ... WHERE id = [chapter_id]`. สร้าง `chapter_versions` ใหม่หาก `content_original` เปลี่ยนแปลง.
+            *   **Toast:** `"อัปเดตตอน '[ชื่อตอน]' เรียบร้อยแล้ว"`
+        *   (ทั้งสองกรณี): "ยกเลิก"
+*   **Database:** `INSERT/UPDATE chapters`, `INSERT INTO mark_lines` (ถ้าสร้างใหม่), `INSERT INTO chapter_versions`. อัปเดต `novels`.
+
+---
+
+### 8.3 หน้าบุ๊คมาร์ค (Bookmarks Page - `/bookmarks`)
+
+*   **การดึงข้อมูล:** Query `user_bookmarks` table โดย `JOIN` กับ `novels` และ `chapters` เพื่อดึงข้อมูล `user_id` ปัจจุบัน.
 *   **UI:**
-    *   หัวเรื่อง: "เพิ่มตอนใหม่" / "แก้ไขตอน: [ชื่อตอนปัจจุบัน]"
-    *   ฟอร์ม:
-        *   ชื่อตอน (Chapter Title): Input text, จำเป็น
-        *   เนื้อหา (Content): Rich Text Editor (TipTap - หนา, เอียง, ขีดเส้นใต้, list, link, ฟอนต์ Sarabun, คงรูปแบบจาก Word)
-        *   สถานะตอน (Chapter Status): Radio Group ("เผยแพร่", "ฉบับร่าง")
-        *   สิทธิ์การเข้าถึงตอน (Chapter Access Level): Checkbox ("ทุกคน", "เฉพาะสมาชิก", "เฉพาะนักแปล")
-        *   *หมายเหตุ:* ค่าเริ่มต้นดึงจาก Novel settings แต่ปรับเปลี่ยนได้
-*   **ปุ่ม:**
-    *   เพิ่มตอน: "เผยแพร่ตอน", "บันทึกเป็นฉบับร่าง"
-    *   แก้ไขตอน: "บันทึกการเปลี่ยนแปลง" (สร้าง `chapter_versions` ใหม่)
-    *   (ทั้งสองกรณี): "ยกเลิก"
-*   **Toast (เมื่อสำเร็จ):** "บันทึกตอน '[ชื่อตอน]' เรียบร้อยแล้ว"
-*   **การทำงานเบื้องหลัง (สร้างใหม่):** สร้าง `mark_lines` ว่างๆ และ `chapter_versions` เริ่มต้น
+    *   **หัวเรื่อง:** "บุ๊คมาร์คของฉัน"
+    *   **รายการนิยายที่บุ๊คมาร์ค:** (เรียงตาม `user_bookmarks.bookmarked_at` ล่าสุดของนิยายนั้นๆ)
+        *   **แต่ละรายการนิยาย (Card):** รูปปก (ซ้าย), ชื่อนิยาย, "ตอนล่าสุดที่บุ๊คมาร์ค: [ชื่อตอน]" (ลิงก์ไปตอนนั้น), ปุ่ม "ไปยังบุ๊คมาร์คล่าสุด" (ไอคอน `BookOpen` จาก Lucide-Svelte) (ขวา)
+        *   ปุ่ม "จัดการบุ๊คมาร์คของเรื่องนี้" (ไอคอน `Settings` จาก Lucide-Svelte)
+            *   **Action:** เปิด Modal "จัดการบุ๊คมาร์คสำหรับเรื่อง: [ชื่อนิยาย]"
+                *   **ภายใน Modal:**
+                    *   **ตัวเลือกเรียงลำดับ:** Dropdown ("ตามลำดับตอน", "ตามวันที่บุ๊คมาร์คล่าสุด")
+                    *   **รายการบุ๊คมาร์คของเรื่องนั้น (Table/List):** `Checkbox` (สำหรับเลือก), ชื่อตอน, วันที่/เวลาบุ๊คมาร์ค. ไฮไลท์บุ๊คมาร์คล่าสุดของเรื่อง.
+                    *   **ปุ่ม:**
+                        *   "ลบที่เลือก":
+                            *   **Action:** `DELETE FROM user_bookmarks WHERE id IN (...)`
+                            *   **Toast:** `"ลบบุ๊คมาร์ค X รายการสำเร็จ"`
+                        *   "ล้างบุ๊คมาร์คทั้งหมดของเรื่องนี้": (PC: ไอคอน `Trash2`+ข้อความ, Mobile: ไอคอน `Trash2`)
+                            *   **Action:** เปิด Modal ยืนยัน. ยืนยันแล้ว `DELETE FROM user_bookmarks WHERE novel_id = [novel_id] AND user_id = [user_id]`
+                            *   **Toast:** `"ลบบุ๊คมาร์คทั้งหมดของเรื่อง '[ชื่อนิยาย]' สำเร็จ"`
+                        *   "บันทึก/เสร็จสิ้น", "ยกเลิก"
+    *   **ปุ่ม "ลบบุ๊คมาร์คทั้งหมด (ทุกเรื่อง)":** (ด้านบนของหน้า หรือท้ายรายการ)
+        *   **Action:** เปิด Modal ยืนยัน "คุณแน่ใจหรือไม่ว่าต้องการลบบุ๊คมาร์คทั้งหมดของคุณ?"
+        *   **ยืนยัน:** `DELETE FROM user_bookmarks WHERE user_id = [user_id]`
+        *   **Toast:** `"ลบบุ๊คมาร์คทั้งหมด (ทุกเรื่อง) เรียบร้อยแล้ว"`
+*   **Tech Stack:** Supabase (query `user_bookmarks`, `novels`, `chapters`), Skeleton UI (Card, Button, Modal, Table, Checkbox, Dropdown), Lucide-Svelte
 
-### 7.3 หน้าบุ๊คมาร์ค (Bookmarks Page - `/bookmarks`)
+---
 
-*   **ความสามารถ:**
-    *   รายการนิยายที่บุ๊คมาร์ค (เรียงตามวันที่บุ๊คมาร์คล่าสุดของนิยาย)
-    *   แต่ละนิยาย: ปก, ชื่อ, ตอนล่าสุดที่บุ๊คมาร์ค, ปุ่ม "ไปยังบุ๊คมาร์คล่าสุด" (`PlayCircle`)
-    *   ปุ่ม "จัดการบุ๊คมาร์ค" (ต่อเรื่อง, `Settings`): เปิด Modal
-        *   **Modal "จัดการบุ๊คมาร์คสำหรับเรื่อง: [ชื่อนิยาย]"**:
-            *   เรียงลำดับ (ตอน/วันที่), รายการ (Checkbox, ชื่อตอน, วันที่, ไฮไลท์ล่าสุด)
-            *   ปุ่ม "ลบที่เลือก": **Toast:** "ลบบุ๊คมาร์ค X รายการสำเร็จ"
-            *   ปุ่ม "ล้างบุ๊คมาร์คทั้งหมดของเรื่องนี้" (`Trash2`): Modal ยืนยัน "คุณแน่ใจหรือไม่ว่าต้องการล้างบุ๊คมาร์คทั้งหมดของเรื่อง '[ชื่อนิยาย]'?"
-                *   **Toast (สำเร็จ):** "ล้างบุ๊คมาร์คทั้งหมดของเรื่อง '[ชื่อนิยาย]' สำเร็จแล้ว"
-            *   ปุ่ม "บันทึก/เสร็จสิ้น", "ยกเลิก"
-    *   ปุ่ม "ลบบุ๊คมาร์คทั้งหมด (ทุกเรื่อง)" (`Trash`): Modal ยืนยัน "คุณแน่ใจหรือไม่ว่าต้องการลบบุ๊คมาร์คทั้งหมด (ทุกเรื่อง)?"
-        *   **Toast (สำเร็จ):** "ลบบุ๊คมาร์คทั้งหมด (ทุกเรื่อง) เรียบร้อยแล้ว"
+### 8.4 แดชบอร์ดนักแปล (Translator Dashboard - `/translator/dashboard`)
 
-### 7.4 แดชบอร์ดนักแปล (Translator Dashboard - `/translator/dashboard`)
+*   **การดึงข้อมูล:** Query `novels` table ที่ `author_id` คือ `user_id` ปัจจุบัน และ `chapters`, `mark_lines` ที่เกี่ยวข้องเพื่อคำนวณความคืบหน้า
+*   **UI:**
+    *   **หัวเรื่อง:** "แดชบอร์ดนักแปล"
+    *   **รายการนิยายที่นักแปลจัดการ (Grid of Cards):**
+        *   **แต่ละ Card:** รูปปก, ชื่อนิยาย
+        *   **ความคืบหน้าการมาร์ค:** "[X]% (Y/Z ตอนที่มาร์คแล้ว)" + `Progress Bar` (Skeleton UI). คำนวณจากจำนวนตอนที่มี `mark_lines` อย่างน้อย 1 บรรทัด เทียบกับจำนวนตอนทั้งหมดของนิยาย.
+        *   ปุ่ม "จัดการบรรทัดมาร์ค" (ไอคอน `ListChecks` จาก Lucide-Svelte)
+            *   **Action:** นำทางไปหน้า "หน้าจัดการบรรทัดมาร์ค" (`/translator/manage-marks/[novel_slug]`)
+*   **Tech Stack:** Supabase (query `novels`, `chapters`, `mark_lines`), Skeleton UI (Card, Progress Bar, Button), Lucide-Svelte
 
-*   **ความสามารถ:**
-    *   รายการนิยายที่นักแปลจัดการ (การ์ด: ปก, ชื่อ, ความคืบหน้าการมาร์ค % + Progress Bar)
-    *   ปุ่ม "จัดการบรรทัดมาร์ค" (ต่อเรื่อง, `ListChecks`) นำทางไปหน้า 7.4.1
+---
 
-#### 7.4.1 หน้าจัดการบรรทัดมาร์ค (Mark Line Management Page - `/translator/manage-marks/[novel_slug]`)
+#### 8.4.1 หน้าจัดการบรรทัดมาร์ค (Mark Line Management Page - `/translator/manage-marks/[novel_slug]`)
 
-*   **หัวเรื่อง:** "จัดการบรรทัดมาร์คสำหรับ: [ชื่อนิยาย]"
-*   **ส่วนควบคุมหลัก:** ปุ่ม "เลือกตอนเพื่อคัดลอก/ดาวน์โหลด" (`Pointer`) (Toggle โหมดเลือก, แสดง Checkbox และ Batch Actions Toolbar)
-*   **สารบัญตอน:** Collapse/Accordion, ปรับจำนวนตอน, หัวกลุ่ม (ชื่อ, (โหมดเลือก) Checkbox "เลือกทั้งหมดในกลุ่ม")
-*   **รายการตอน:** ลำดับ, ชื่อตอน, จำนวนมาร์ค, สถานะมาร์ค (`CheckCircle2`/`Circle`), ปุ่ม "คัดลอกมาร์คตอนนี้" (`Copy`), (โหมดเลือก) Checkbox
-    *   **Toast (คัดลอกมาร์คตอนนี้):** "คัดลอกบรรทัดที่มาร์คของตอน '[ชื่อตอน]' ไปยังคลิปบอร์ดแล้ว"
-*   **Batch Actions Toolbar (เมื่อเลือกตอน):**
-    *   ปุ่ม "คัดลอกบรรทัดมาร์ค": **Toast:** "คัดลอกบรรทัดที่มาร์คของตอนที่เลือกไปยังคลิปบอร์ดแล้ว"
-    *   ปุ่ม "ดาวน์โหลดไฟล์บรรทัดมาร์ค": เปิด Modal ตัวเลือก (รวม .txt / แยก .zip)
-        *   **Toast (ดาวน์โหลด):** "กำลังเตรียมไฟล์ดาวน์โหลด..." และ "ดาวน์โหลดไฟล์บรรทัดมาร์คสำเร็จแล้ว"
+*   **การดึงข้อมูล:** ใช้ `novel_slug` เพื่อ query `novels`, `chapters`, และ `mark_lines` (สำหรับ `user_id` ปัจจุบัน)
+*   **UI:**
+    *   **หัวเรื่อง:** "จัดการบรรทัดมาร์คสำหรับ: [ชื่อนิยาย]"
+    *   **ส่วนควบคุมหลัก:**
+        *   ปุ่ม "เลือกตอนเพื่อคัดลอก/ดาวน์โหลด" (Toggle Switch หรือ Button)
+            *   **Action:** Toggle โหมดเลือก (แสดง/ซ่อน Checkbox หน้าแต่ละตอน และ Batch Actions Toolbar)
+    *   **การแสดงผลสารบัญตอน (Accordion):**
+        *   **UI:** เหมือนสารบัญในหน้าข้อมูลนิยาย แต่เน้นข้อมูลการมาร์ค
+        *   **หัวกลุ่ม (Accordion Item Header):** ชื่อกลุ่ม (เช่น "ตอนที่ 1-50"), (ถ้าโหมดเลือกเปิด) `Checkbox` "เลือกทั้งหมดในกลุ่ม"
+        *   **รายการตอน:**
+            *   (ถ้าโหมดเลือกเปิด) `Checkbox` เลือกตอน
+            *   เลขลำดับตอน, ชื่อตอน
+            *   จำนวนบรรทัดมาร์ค: "[N] บรรทัด" (จาก `COUNT(mark_lines) WHERE chapter_id = ... AND user_id = ...`)
+            *   สถานะมาร์ค: ไอคอน `CheckCircle2` (มาร์คครบทุกบรรทัด - สมมติว่ามีข้อมูลจำนวนบรรทัดทั้งหมดของตอน) หรือ `Circle` (ยังไม่ครบ/ยังไม่เริ่ม) หรือ `TrendingUp` (กำลังดำเนินการ)
+            *   ปุ่ม "คัดลอกมาร์คตอนนี้": (ไอคอน `Copy` จาก Lucide-Svelte)
+                *   **Action:** Query `mark_lines.line_number` สำหรับตอนนี้, คัดลอกไป Clipboard (เช่น "1, 5, 10-15")
+                *   **Toast:** `"คัดลอกมาร์คของตอน '[ชื่อตอน]' แล้ว"`
+    *   **Batch Actions Toolbar (แสดงเมื่อเลือกตอนอย่างน้อย 1 ตอน และโหมดเลือกเปิด):**
+        *   **UI:** แถบเครื่องมือลอยตัว หรืออยู่ด้านบน/ล่างของรายการ
+        *   ปุ่ม "คัดลอกบรรทัดมาร์คของตอนที่เลือก":
+            *   **Action:** รวบรวม `mark_lines.line_number` จากทุกตอนที่เลือก คัดลอกไป Clipboard
+            *   **Toast:** `"คัดลอกมาร์คของ X ตอนที่เลือกแล้ว"`
+        *   ปุ่ม "ดาวน์โหลดไฟล์บรรทัดมาร์คของตอนที่เลือก":
+            *   **Action:** เปิด Modal ตัวเลือก:
+                *   "รวมเป็นไฟล์ .txt ไฟล์เดียว (แต่ละตอนคั่นด้วยชื่อตอน)"
+                *   "แยกเป็นหลายไฟล์ .txt (อยู่ใน .zip)"
+            *   **ดาวน์โหลด:** สร้างไฟล์ .txt หรือ .zip แล้วให้ User ดาวน์โหลด
+            *   **Toast:** `"กำลังเตรียมไฟล์ดาวน์โหลด..."` และ `"ดาวน์โหลดไฟล์มาร์คสำเร็จ"`
+*   **Tech Stack:** SvelteKit, Skeleton UI (Accordion, Checkbox, Button, Modal), Lucide-Svelte, Supabase (query `chapters`, `mark_lines`), JS Logic (สร้างไฟล์/ZIP)
 
-### 7.5 หน้าอ่านนิยายและโหมดแปล (Reading & Translator Mode UI - `/novels/[novel_slug]/chapter/[chapter_number]`)
+---
 
-*   **การแสดงผลเนื้อหา:**
-    *   ชื่อตอน: ชัดเจน กลางบน
-    *   เนื้อหานิยาย: ย่อหน้าทุกย่อหน้า (CSS `text-indent`), PC: กว้างจำกัดกลางจอ, Mobile: เต็มจอ, ไม่มี Horizontal Scroll
-    *   ปุ่ม "กลับไปบนสุด" (`ArrowUpCircle`): กึ่งโปร่งแสง ขวาล่าง เมื่อเลื่อนลง
-    *   Keyboard Controls (PC): `ArrowLeft` (ก่อนหน้า), `ArrowRight` (ถัดไป), `Space` (เลื่อนลง)
+### 8.5 หน้าอ่านนิยายและโหมดแปล (Reading & Translator Mode UI - `/novels/[novel_slug]/chapter/[chapter_number]`)
 
-*   **โหมดการอ่าน (Member/Translator ปิด "โหมดนักแปล"):**
-    *   **Top Reading Toolbar (แสดงเสมอ):**
-        *   PC: "สารบัญ" (`List`), "ปรับแต่ง (Aa)" (`Settings2` - Popover), "บุ๊คมาร์ค" (`Bookmark`), "สลับธีม" (`Sun`/`Moon`), "โหมดอ่านต่อเนื่อง" (`Infinity` - เปิดมี Animation สีรุ้ง), "< ตอนก่อนหน้า", "ตอนต่อไป >"
-        *   Mobile: "สารบัญ", "ปรับแต่ง (Aa)", "บุ๊คมาร์ค", "สลับธีม", "โหมดอ่านต่อเนื่อง"
-    *   **Toast (บุ๊คมาร์ค):** "เพิ่ม '[ชื่อตอน]' ในบุ๊คมาร์คแล้ว" / "ลบ '[ชื่อตอน]' ออกจากบุ๊คมาร์คแล้ว"
-    *   **Toast (โหมดอ่านต่อเนื่อง):** "เปิดโหมดอ่านต่อเนื่องแล้ว" / "ปิดโหมดอ่านต่อเนื่องแล้ว"
-    *   **Mobile Bottom Navigation Toolbar (เมื่อแตะเนื้อหา, ซ่อนเมื่อเลื่อน/แตะอีก):** "< ตอนก่อนหน้า", "ตอนต่อไป >"
-    *   **ท้ายบท:**
-        *   โหมดอ่านต่อเนื่องปิด: ปุ่มใหญ่ "ตอนต่อไป: [ชื่อตอนถัดไป]"
-        *   โหมดอ่านต่อเนื่องเปิด: โหลดตอนถัดไปอัตโนมัติ (Infinite Scroll), ชื่อตอนด้านบนอัปเดต
-
-*   **โหมดนักแปล (Translator เปิด "โหมดนักแปล" สำหรับนิยายนี้):**
-    *   **Top Reading Toolbar:** เหมือนโหมดอ่าน + ปุ่ม "คัดลอกมาร์คทั้งหมด" (`CopyCheck`) (สำหรับตอนปัจจุบัน)
-        *   **Toast:** "คัดลอกบรรทัดที่มาร์คทั้งหมดของตอนปัจจุบันไปยังคลิปบอร์ดแล้ว"
+*   **การดึงข้อมูล:** `novel_slug` และ `chapter_number` เพื่อ query `chapters.content_original`. ตรวจสอบ `localStorage` หรือ `user_settings` สำหรับสถานะ "โหมดนักแปล" ของนิยายนี้สำหรับ User ปัจจุบัน.
+*   **การแสดงผลเนื้อหา (Content Display):**
+    *   **ชื่อตอน (`chapters.title`):** แสดงชัดเจนกลางบนของพื้นที่เนื้อหา
+    *   **เนื้อหานิยาย (`chapters.content_original`):**
+        *   **การย่อหน้า (Indentation):** `text-indent` สำหรับทุกย่อหน้า
+        *   **PC Layout:** เนื้อหาใน Container ความกว้างจำกัด, จัดกลางจอ
+        *   **Mobile Layout:** เนื้อหาเต็มความกว้างจอ (Edge-to-edge)
+        *   **No Horizontal Scroll**
+    *   **ปุ่ม "Arrow Up" (กลับไปด้านบนสุด):** (ไอคอน `ArrowUpCircle` จาก Lucide-Svelte)
+        *   **UI:** กึ่งโปร่งแสง, มุมขวาล่าง, แสดงเมื่อ Scroll ลงมาระยะหนึ่ง
+    *   **Keyboard Controls (PC Only):**
+        *   `ArrowLeft`: ตอนก่อนหน้า
+        *   `ArrowRight`: ตอนถัดไป
+        *   `Space Bar`: Scroll down
+*   **โหมดการอ่าน (Member/Translator เมื่อ "โหมดนักแปล" ปิด):**
+    *   **แถบเครื่องมือหลักด้านบน (Top Reading Toolbar - Skeleton UI App Bar, แสดงเสมอ):**
+        *   **PC Items (ซ้ายไปขวา):**
+            *   "สารบัญ" (ไอคอน `List`): เปิด Modal สารบัญ (คล้ายในหน้าข้อมูลนิยายแต่แสดงใน Modal)
+            *   "ปรับแต่งการแสดงผล (Aa)" (ไอคอน `Settings2`): เปิด Popover (Skeleton UI) ตั้งค่า: ขนาดฟอนต์, ระยะห่างบรรทัด, สีพื้นหลังหน้าอ่าน (ขาว, ครีม, เทา, ดำ)
+            *   "บุ๊คมาร์ค" (ไอคอน `Bookmark`): Toggle `user_bookmarks`
+                *   **Toast (เพิ่ม):** `"บุ๊คมาร์คตอน '[ชื่อตอน]' แล้ว"`
+                *   **Toast (ลบ):** `"ยกเลิกบุ๊คมาร์คตอน '[ชื่อตอน]' แล้ว"`
+            *   "สลับธีมเว็บไซต์" (ไอคอน `Sun`/`Moon`)
+            *   "โหมดอ่านต่อเนื่อง" (ไอคอน `Infinity`): Toggle.
+                *   **UI:** เปิด: ไอคอนมี Animation สีรุ้งช้าๆ. ปิด: ไอคอนสีตาม Theme.
+                *   **Toast (เปิด):** `"เปิดโหมดอ่านต่อเนื่อง"`
+                *   **Toast (ปิด):** `"ปิดโหมดอ่านต่อเนื่อง"`
+            *   ปุ่มนำทาง: `< ตอนก่อนหน้า` (ไอคอน `ChevronLeft`), `ตอนต่อไป >` (ไอคอน `ChevronRight`)
+        *   **Mobile Items (Top Reading Toolbar):** คล้าย PC แต่ปุ่มนำทางตอนจะไปอยู่แถบด้านล่าง
+            *   ไอคอน: `List`, `Settings2`, `Bookmark`, `Sun`/`Moon`, `Infinity`
+    *   **การนำทางตอน (Chapter Navigation - เฉพาะ Mobile):**
+        *   **แถบเครื่องมือด้านล่าง (Bottom Navigation Toolbar - Skeleton UI App Bar):**
+            *   **UI:** ปรากฏเมื่อ "แตะ" เนื้อหา, ซ่อนเมื่อ Scroll หรือแตะอีกครั้ง
+            *   **Items:** `< ตอนก่อนหน้า` (ไอคอน `ChevronLeft`), `ตอนต่อไป >` (ไอคอน `ChevronRight`)
+    *   **เมื่อเลื่อนถึงท้ายบท:**
+        *   **(ถ้า "โหมดอ่านต่อเนื่อง" ปิด):** แสดงปุ่มขนาดใหญ่ "ตอนต่อไป: [ชื่อตอนถัดไป]". คลิกแล้วรีเฟรชหน้าโหลดตอนใหม่.
+        *   **(ถ้า "โหมดอ่านต่อเนื่อง" เปิด):** โหลดเนื้อหาตอนถัดไปอัตโนมัติ (Infinite Scroll). ชื่อตอนด้านบนอัปเดตตาม.
+*   **โหมดนักแปล (Translator Mode - เมื่อ "โหมดนักแปล" สำหรับนิยายนี้เปิด):**
+    *   **แถบเครื่องมือหลักด้านบน (Top Reading Toolbar):**
+        *   **PC Items:** เหมือนโหมดอ่าน + ปุ่ม "คัดลอกมาร์คทั้งหมด" (ไอคอน `CopyCheck`)
+            *   **Action:** คัดลอก `mark_lines.line_number` ของตอนนี้ที่ `user_id` ปัจจุบันมาร์คไว้
+            *   **Toast:** `"คัดลอกมาร์คทั้งหมดของตอนนี้แล้ว"`
+        *   **Mobile Items:** เหมือนโหมดอ่าน + ปุ่ม "คัดลอกมาร์คทั้งหมด" (ไอคอน `CopyCheck`)
     *   **การแสดงผลเนื้อหา:**
-        *   แถบเลขบรรทัด (ซ้าย, สีปรับตามธีม, ตัวเลขเด่นน้อยกว่าเนื้อหา)
-        *   เนื้อหาต้นฉบับ (ถัดจากเลขบรรทัด, ย่อหน้า)
-        *   Checkbox สำหรับมาร์ค (ขวาสุดของแต่ละบรรทัด)
+        *   **แถบเลขบรรทัด (Line Number Gutter):** ซ้ายสุดของเนื้อหา. สีพื้นหลัง/ตัวอักษรปรับตาม Theme (ตัวเลขสีไม่เด่นเท่าเนื้อหาหลัก)
+        *   **เนื้อหาต้นฉบับ (`chapters.content_original`):** ถัดจากแถบเลขบรรทัด, ย่อหน้าทุกย่อหน้า
+        *   **Checkbox สำหรับมาร์ค:** (Skeleton UI Checkbox) ขวาสุดของแต่ละบรรทัด (แต่ละ `div` หรือ `p` ของเนื้อหา)
     *   **MarkLine Interaction:**
-        *   คลิก Checkbox: **Toast:** "มาร์คบรรทัดที่ X แล้ว" / "ยกเลิกการมาร์คบรรทัดที่ X"
-        *   ดับเบิลคลิกบรรทัดเนื้อหา: ไฮไลท์, คัดลอกข้อความต้นฉบับ, มาร์คอัตโนมัติ
-            *   **Toast:** "คัดลอกและมาร์คบรรทัดที่ X แล้ว"
-    *   **ท้ายบท (โหมดนักแปล):**
-        *   สรุปข้อมูลมาร์ค: "มีมาร์คทั้งหมด: [จำนวน] บรรทัด", "บรรทัดที่มาร์ค: [เลขที่ 1], [เลขที่ 2], ... (5 แรก, ปุ่ม 'ดูทั้งหมด' -> Modal)"
-        *   ปุ่ม "ล้างมาร์คทั้งหมดของตอนนี้": Modal ยืนยัน "คุณแน่ใจหรือไม่ว่าต้องการล้างมาร์คทั้งหมดของตอนนี้?"
-            *   **Toast:** "ล้างมาร์คทั้งหมดของตอนนี้แล้ว"
-        *   ปุ่ม "คัดลอกมาร์คทั้งหมดของตอนนี้": **Toast:** "คัดลอกมาร์คทั้งหมดของตอนนี้ไปยังคลิปบอร์ดแล้ว"
+        *   **คลิก Checkbox:** มาร์ค/ยกเลิกมาร์คบรรทัดนั้นๆ (`INSERT`/`DELETE` ใน `mark_lines`)
+            *   **Toast (มาร์ค):** `"มาร์คบรรทัดที่ X แล้ว"`
+            *   **Toast (ยกเลิก):** `"ยกเลิกมาร์คบรรทัดที่ X แล้ว"`
+        *   **ดับเบิลคลิกที่บรรทัดเนื้อหา:**
+            1.  ไฮไลท์บรรทัดชั่วครู่ (CSS animation)
+            2.  คัดลอกข้อความต้นฉบับของบรรทัดนั้นไป Clipboard
+            3.  ทำการ "มาร์ค" บรรทัดนั้นอัตโนมัติ (`INSERT` ใน `mark_lines`)
+            *   **Toast:** `"คัดลอกและมาร์คบรรทัดที่ X แล้ว"`
+    *   **เมื่อเลื่อนถึงท้ายบทในโหมดนักแปล:**
+        *   **ส่วนสรุปข้อมูลการมาร์ค:**
+            *   ข้อความ: "มีมาร์คทั้งหมด: [จำนวน `mark_lines`] บรรทัด"
+            *   ข้อความ: "บรรทัดที่มาร์คได้แก่: [เลขบรรทัด 1], [เลขบรรทัด 2], ..." (แสดง 5 บรรทัดแรก + ปุ่ม "ดูทั้งหมด" เปิด Modal แสดงรายการทั้งหมด)
+            *   ปุ่ม "ล้างมาร์คทั้งหมดของตอนนี้": (ไอคอน `Eraser` จาก Lucide-Svelte)
+                *   **Action:** Modal ยืนยัน. `DELETE FROM mark_lines WHERE chapter_id = ... AND user_id = ...`
+                *   **Toast:** `"ล้างมาร์คทั้งหมดของตอนนี้แล้ว"`
+            *   ปุ่ม "คัดลอกมาร์คทั้งหมดของตอนนี้": (ไอคอน `CopyCheck` จาก Lucide-Svelte)
+                *   **Action:** เหมือนปุ่มบน Toolbar
+                *   **Toast:** `"คัดลอกมาร์คทั้งหมดของตอนนี้แล้ว"`
+*   **Tech Stack:** Svelte store (จัดการสถานะ UI), JavaScript/Svelte logic, Skeleton UI (App Bar, Modal, Popover, Checkbox, Button), Supabase (query `chapters`, CRUD `user_bookmarks`, CRUD `mark_lines`)
 
-### 7.6 แดชบอร์ดผู้ดูแลระบบ (Admin Dashboard - `/admin/dashboard`)
+---
 
-*   **Sidebar นำทาง (ซ้าย):** "ภาพรวม", "จัดการผู้ใช้", "จัดการหมวดหมู่", "จัดการประกาศ", "จัดการเว็บไซต์", "จัดการเวอร์ชัน"
-*   **พื้นที่เนื้อหาหลัก (ขวา):** แสดงตามเมนู
+### 8.6 แดชบอร์ดผู้ดูแลระบบ (Admin Dashboard - `/admin/dashboard`)
 
-#### 7.6.1 หน้าภาพรวมแดชบอร์ด (`/admin/dashboard` หรือ `/admin/dashboard/overview`)
+*   **Layout:** Sidebar ซ้าย (Skeleton UI Navigation Rail หรือ List), พื้นที่แสดงเนื้อหาหลักขวา
+*   **Sidebar นำทาง:**
+    *   "ภาพรวม" (`/admin/dashboard/overview`)
+    *   "จัดการผู้ใช้" (`/admin/dashboard/users`)
+    *   "จัดการหมวดหมู่" (`/admin/dashboard/categories`)
+    *   "จัดการประกาศ" (`/admin/dashboard/announcements`)
+    *   "จัดการเว็บไซต์" (`/admin/dashboard/site-settings`)
+    *   "จัดการเวอร์ชัน" (`/admin/dashboard/versions`)
 
-*   หัวเรื่อง: "ภาพรวมแดชบอร์ดผู้ดูแลระบบ"
-*   แสดง: จำนวนนิยายทั้งหมด, จำนวนผู้ใช้ทั้งหมด (การ์ด)
+---
 
-#### 7.6.2 หน้าจัดการผู้ใช้ (`/admin/dashboard/users`)
+#### 8.6.1 หน้าภาพรวมแดชบอร์ด (Dashboard Overview Page - `/admin/dashboard/overview`)
 
-*   หัวเรื่อง: "จัดการผู้ใช้ทั้งหมด"
-*   ควบคุม: ค้นหา (real-time, highlight), จำนวนผู้ใช้ (ทั้งหมด, ตามบทบาท)
-*   ตาราง: #, Avatar, Email, ชื่อที่แสดง, สิทธิ์, วันที่สมัคร, วันที่สิทธิ์หมดอายุ, ปุ่ม "จัดการ" (`Settings`) (เรียงคอลัมน์ได้)
+*   **หัวเรื่อง:** "ภาพรวมแดชบอร์ดผู้ดูแลระบบ"
+*   **UI:** แสดงการ์ดข้อมูล (Skeleton UI Card)
+    *   จำนวนนิยายทั้งหมด (จาก `COUNT(novels)`)
+    *   จำนวนผู้ใช้ทั้งหมด (จาก `COUNT(profiles)`)
+    *   จำนวนนักแปล (จาก `COUNT(profiles WHERE role_id = 'Translator')`)
+    *   จำนวนประกาศที่ใช้งานอยู่ (จาก `COUNT(announcements WHERE is_active = true)`)
+*   **Tech Stack:** SvelteKit (Routing), Skeleton UI (Card), Supabase (Aggregate queries)
+
+---
+
+#### 8.6.2 หน้าจัดการผู้ใช้ (User Management Page - `/admin/dashboard/users`)
+
+*   **หัวเรื่อง:** "จัดการผู้ใช้ทั้งหมด"
+*   **ส่วนควบคุม:**
+    *   ช่องค้นหาผู้ใช้ (Input, กรอง `profiles.display_name` หรือ `auth.users.email` real-time)
+    *   แสดงจำนวนผู้ใช้ทั้งหมด / ตามบทบาท
+*   **ตารางผู้ใช้ (Skeleton UI Table):**
+    *   **คอลัมน์:** #, Avatar (`profiles.avatar_url`), Email (`auth.users.email`), ชื่อที่แสดง (`profiles.display_name`), สิทธิ์ (`roles.name`), วันที่สมัคร (`profiles.created_at`), วันที่สิทธิ์หมดอายุ (`profiles.role_expiry_date`), สถานะ (`profiles.is_suspended`), ปุ่ม "จัดการ" (ไอคอน `Settings`, เปิด Modal จัดการผู้ใช้)
+    *   **การเรียง:** คลิกหัวคอลัมน์เพื่อเรียงข้อมูล
 *   **Modal จัดการผู้ใช้:**
-    *   UI: Avatar (+เปลี่ยน), Email (read-only), ชื่อที่แสดง (+แก้), สิทธิ์ (Dropdown +แก้), วันที่สมัคร (read-only), วันที่สิทธิ์หมดอายุ (Date Picker, ปุ่ม: +1/3/6 เดือน, ไม่มีวันหมดอายุ), ระงับบัญชี (Toggle)
-    *   ปุ่ม: "บันทึกการเปลี่ยนแปลง", "ยกเลิก"
-    *   **Toast (บันทึก):** "อัปเดตข้อมูลผู้ใช้ '[ชื่อผู้ใช้/อีเมล]' เรียบร้อยแล้ว"
-    *   **Toast (เปลี่ยน Avatar):** "เปลี่ยนรูปโปรไฟล์ของผู้ใช้ '[ชื่อผู้ใช้/อีเมล]' เรียบร้อยแล้ว"
+    *   **UI:**
+        *   Avatar (แสดง + ปุ่มเปลี่ยนรูป - Admin อัปโหลดให้)
+        *   Email (Read-only)
+        *   ชื่อที่แสดง (`Input text` + แก้ไข)
+        *   สิทธิ์ (`Select` Dropdown ดึงจาก `roles` + แก้ไข)
+        *   วันที่สมัคร (Read-only)
+        *   วันที่สิทธิ์หมดอายุ (`Date Picker` + แก้ไข, ปุ่มช่วย: "+1 เดือน", "+3 เดือน", "+6 เดือน", "ไม่มีวันหมดอายุ" (ตั้งเป็น NULL))
+        *   ระงับบัญชี (`Toggle Switch` เปลี่ยน `profiles.is_suspended`)
+    *   **ปุ่ม:** "บันทึกการเปลี่ยนแปลง", "ยกเลิก"
+        *   **Action (บันทึก):** `UPDATE profiles SET ... WHERE id = ...`
+        *   **Toast:** `"อัปเดตข้อมูลผู้ใช้ [ชื่อผู้ใช้] สำเร็จแล้ว"`
+*   **Tech Stack:** SvelteKit, Skeleton UI (Table, Input, Select, Date Picker, Toggle, Modal), Supabase (CRUD `profiles`, query `auth.users`, `roles`)
 
-#### 7.6.3 หน้าจัดการหมวดหมู่นิยาย (`/admin/dashboard/categories`)
+---
 
-*   หัวเรื่อง: "จัดการหมวดหมู่นิยาย"
-*   เพิ่ม: ปุ่ม "เพิ่มหมวดหมู่ใหม่" (`PlusCircle`)
-    *   **Modal เพิ่มหมวดหมู่:** ชื่อ, Slug (auto-generate, แก้ไขได้), คำอธิบาย
-    *   ปุ่ม: "บันทึก", "ยกเลิก"
-    *   **Toast (บันทึก):** "เพิ่มหมวดหมู่ '[ชื่อหมวดหมู่]' สำเร็จแล้ว"
-*   รายการหมวดหมู่ (Expandable Row/Accordion):
-    *   แถวหลัก: ชื่อ, จำนวนนิยาย, ปุ่ม "แก้ไขชื่อ" (`Edit3`), ปุ่ม "ลบ" (`Trash2`), ปุ่ม "แสดง/ซ่อนนิยาย" (`ChevronDown`/`ChevronUp`)
-    *   **Modal แก้ไขชื่อหมวดหมู่:** ชื่อ, Slug (auto-generate, แก้ไขได้), คำอธิบาย
-        *   **Toast (บันทึก):** "แก้ไขหมวดหมู่ '[ชื่อหมวดหมู่เดิม]' เป็น '[ชื่อหมวดหมู่ใหม่]' สำเร็จแล้ว"
-    *   **Modal ลบหมวดหมู่:** ยืนยัน "คุณแน่ใจหรือไม่ว่าต้องการลบหมวดหมู่ '[ชื่อหมวดหมู่]'?" + ตัวเลือกย้ายนิยายในหมวดนี้ (Dropdown เลือกหมวดอื่น / "ไม่มีหมวดหมู่")
-        *   **Toast (ลบ):** "ลบหมวดหมู่ '[ชื่อหมวดหมู่]' และย้ายนิยาย (ถ้ามี) เรียบร้อยแล้ว"
-    *   ส่วนขยาย: รายการนิยายในหมวด (ชื่อ + ลิงก์)
+#### 8.6.3 หน้าจัดการหมวดหมู่นิยาย (Category Management Page - `/admin/dashboard/categories`)
 
-#### 7.6.4 หน้าจัดการประกาศ (`/admin/dashboard/announcements`)
+*   **หัวเรื่อง:** "จัดการหมวดหมู่นิยาย"
+*   **ส่วนเพิ่ม:**
+    *   ปุ่ม "เพิ่มหมวดหมู่ใหม่" (ไอคอน `PlusSquare`)
+        *   **Action:** เปิด Modal:
+            *   **ฟิลด์:** ชื่อหมวดหมู่ (`categories.name`), Slug (`categories.slug` - auto-generate จากชื่อ และแก้ไขได้, เช็ค unique), คำอธิบาย (`categories.description` - Textarea)
+            *   **ปุ่ม:** "บันทึก", "ยกเลิก"
+            *   **Action (บันทึก):** `INSERT INTO categories ...`
+            *   **Toast:** `"เพิ่มหมวดหมู่ '[ชื่อหมวดหมู่]' สำเร็จแล้ว"`
+*   **รายการหมวดหมู่ (Accordion หรือ Table with Expandable Rows):**
+    *   **แถวหลัก:** ชื่อหมวดหมู่, จำนวนนิยายในหมวด (จาก `COUNT(novels WHERE category_id = ...)`), ปุ่ม "แก้ไขชื่อ/Slug/คำอธิบาย" (ไอคอน `Edit`, เปิด Modal คล้ายเพิ่มหมวดหมู่แต่เป็นการแก้ไข), ปุ่ม "ลบ" (ไอคอน `Trash`, สีแดง)
+        *   **Action (ลบ):** เปิด Modal ยืนยัน "การลบหมวดหมู่ '[ชื่อหมวดหมู่]' จะทำให้นิยาย X เรื่องในหมวดนี้ถูกตั้งเป็น 'ไม่มีหมวดหมู่' คุณต้องการดำเนินการต่อหรือไม่?" หรือ "เลือกหมวดหมู่ใหม่สำหรับนิยายในหมวดนี้:" (Dropdown `categories` + ตัวเลือก "ไม่มีหมวดหมู่")
+            *   **ยืนยัน:** `UPDATE novels SET category_id = NULL (หรือ new_category_id) WHERE category_id = ...; DELETE FROM categories WHERE id = ...`
+            *   **Toast:** `"ลบหมวดหมู่ '[ชื่อหมวดหมู่]' และย้ายนิยายเรียบร้อยแล้ว"`
+    *   **(ถ้ามี) ส่วนขยาย:** รายการนิยายในหมวดนั้นๆ (ชื่อนิยาย + ลิงก์ไปหน้าข้อมูลนิยาย)
+*   **Tech Stack:** SvelteKit, Skeleton UI (Table/Accordion, Button, Modal, Input, Textarea), Supabase (CRUD `categories`, UPDATE `novels`)
 
-*   หัวเรื่อง: "จัดการประกาศ"
-*   ปุ่ม "สร้างประกาศใหม่" (`PlusCircle`)
-*   ตาราง: หัวข้อ, สถานะ, หน้าที่แสดง, กลุ่มผู้รับ, วันที่เริ่ม/สิ้นสุด, ปุ่ม: แก้ไข (`Edit3`), ลบ (`Trash2`), สลับสถานะ (Toggle `ToggleLeft`/`ToggleRight`)
-    *   **Toast (ลบ):** "ลบประกาศ '[หัวข้อประกาศ]' เรียบร้อยแล้ว"
-    *   **Toast (สลับสถานะ):** "เปลี่ยนสถานะประกาศ '[หัวข้อประกาศ]' เป็น '[ใช้งาน/ไม่ใช้งาน]' แล้ว"
+---
+
+#### 8.6.4 หน้าจัดการประกาศ (Announcement Management Page - `/admin/dashboard/announcements`)
+
+*   **หัวเรื่อง:** "จัดการประกาศ"
+*   **UI:**
+    *   ปุ่ม "สร้างประกาศใหม่" (ไอคอน `PlusSquare`)
+        *   **Action:** เปิด Modal สร้าง/แก้ไขประกาศ
+    *   **ตารางประกาศ (Skeleton UI Table):**
+        *   **คอลัมน์:** หัวข้อ (`announcements.title`), สถานะ (`announcements.is_active` - แสดงเป็น Badge เขียว/เทา), หน้าที่แสดง (สรุปจาก `announcements.target_pages`), กลุ่มผู้รับ (สรุปจาก `announcements.target_roles`), วันที่เริ่ม (`announcements.start_date`), วันที่สิ้นสุด (`announcements.end_date`), ปุ่มดำเนินการ: "แก้ไข" (ไอคอน `Edit`), "ลบ" (ไอคอน `Trash`), "สลับสถานะ" (Toggle Switch หรือปุ่ม)
+            *   **Action (ลบ):** Modal ยืนยัน. `DELETE FROM announcements WHERE id = ...`
+                *   **Toast:** `"ลบประกาศ '[หัวข้อประกาศ]' สำเร็จแล้ว"`
+            *   **Action (สลับสถานะ):** `UPDATE announcements SET is_active = NOT is_active WHERE id = ...`
+                *   **Toast:** `"เปลี่ยนสถานะประกาศ '[หัวข้อประกาศ]' เป็น '[ใช้งาน/ไม่ใช้งาน]' แล้ว"`
 *   **Modal สร้าง/แก้ไขประกาศ:**
-    *   ฟิลด์: หัวข้อ, เนื้อหา (Markdown Editor), วันที่เริ่ม/สิ้นสุด, หน้าที่แสดง (Checkbox: "หน้าแรก", "หน้านิยาย (ทุกเรื่อง)", "หน้านิยาย (เฉพาะเรื่อง)"), กลุ่มผู้รับ (Checkbox: "ทุกคน", "สมาชิก", "นักแปล", "ผู้ดูแลระบบ"), สถานะ "ใช้งาน" (Toggle)
-    *   ปุ่ม: "บันทึก", "ยกเลิก"
-    *   **Toast (บันทึก):** "บันทึกประกาศ '[หัวข้อประกาศ]' เรียบร้อยแล้ว"
-
-#### 7.6.5 หน้าจัดการเว็บไซต์ (`/admin/dashboard/site-management`)
-
-*   หัวเรื่อง: "จัดการเว็บไซต์"
-*   Layout: Sections
-    *   **ทั่วไป:** ชื่อเว็บไซต์, คำอธิบาย (SEO), โลโก้ (อัปโหลด, Preview), Favicon (อัปโหลด)
-        *   **Toast (อัปโหลดโลโก้/Favicon):** "อัปโหลดโลโก้เว็บไซต์สำเร็จแล้ว" / "อัปโหลด Favicon สำเร็จแล้ว"
-    *   **การลงทะเบียน/เข้าสู่ระบบ:** เปิด/ปิดลงทะเบียนใหม่ (Toggle), เปิด/ปิดเข้าสู่ระบบ Google (Toggle)
-    *   **เนื้อหา:** จำนวนรายการต่อหน้าเริ่มต้น, การตั้งค่าเริ่มต้นนิยายใหม่ (สถานะตอน, สิทธิ์เข้าถึงตอน)
-*   ปุ่ม: "บันทึกการตั้งค่า"
-    *   **Toast:** "บันทึกการตั้งค่าเว็บไซต์เรียบร้อยแล้ว"
-
-#### 7.6.6 หน้าจัดการเวอร์ชัน (`/admin/dashboard/versions`)
-
-*   หัวเรื่อง: "จัดการเวอร์ชัน"
-*   Layout: Tabs
-    *   **Tab 1: เวอร์ชันเว็บไซต์ / Changelog**
-        *   รายการ Changelog (เวอร์ชัน, วันที่, สรุป)
-        *   ปุ่ม "เพิ่ม Changelog ใหม่" (`PlusCircle`)
-            *   **Modal:** หมายเลขเวอร์ชัน, วันที่เผยแพร่, สรุป (Markdown), สถานะ (เผยแพร่/ร่าง)
-            *   **Toast (บันทึก):** "บันทึก Changelog เวอร์ชัน '[หมายเลขเวอร์ชัน]' เรียบร้อยแล้ว"
-        *   แต่ละ Changelog: ปุ่ม "แก้ไข" (`Edit3`), "ลบ" (`Trash2`)
-            *   **Toast (ลบ):** "ลบ Changelog เวอร์ชัน '[หมายเลขเวอร์ชัน]' เรียบร้อยแล้ว"
-    *   **Tab 2: เวอร์ชันนิยายและตอน**
-        *   ค้นหานิยาย
-        *   รายการนิยาย: ชื่อ, ปุ่ม "ดูประวัติเวอร์ชันนิยาย", "ดูประวัติเวอร์ชันตอน"
-        *   **ประวัติเวอร์ชันนิยาย:** (จาก `novel_versions`) เวอร์ชัน, วันที่, ผู้แก้ไข, หมายเหตุ
-            *   ปุ่ม "ดูรายละเอียด" (แสดง Snapshot), "กู้คืนเวอร์ชันนี้" (Modal ยืนยัน)
-                *   **Toast (กู้คืน):** "กู้คืนข้อมูลนิยาย '[ชื่อนิยาย]' เป็นเวอร์ชัน [เลขเวอร์ชัน] สำเร็จแล้ว"
-        *   **ประวัติเวอร์ชันตอน:** (เลือกตอนก่อน) (จาก `chapter_versions`) เวอร์ชัน, วันที่, ผู้แก้ไข, หมายเหตุ
-            *   ปุ่ม "ดูเนื้อหา" (แสดง Snapshot), "กู้คืนเวอร์ชันนี้" (Modal ยืนยัน)
-                *   **Toast (กู้คืน):** "กู้คืนเนื้อหาตอน '[ชื่อตอน]' เป็นเวอร์ชัน [เลขเวอร์ชัน] สำเร็จแล้ว"
-
-### 7.7 หน้าโปรไฟล์ (Profile Page - `/profile`)
-
-*   หัวเรื่อง: "โปรไฟล์ของฉัน"
-*   **รูปโปรไฟล์ (Avatar):**
-    *   แสดง Avatar, ปุ่ม "เปลี่ยนรูปโปรไฟล์" (เปิด File Picker, Crop 1:1)
-    *   **Toast:** "เปลี่ยนรูปโปรไฟล์สำเร็จแล้ว"
-*   **ชื่อที่แสดง (Display Name):**
-    *   แสดงชื่อ, Input แก้ไข + ปุ่ม "บันทึกชื่อที่แสดง"
-    *   **Toast:** "อัปเดตชื่อที่แสดงสำเร็จแล้ว"
-*   **สิทธิ์ผู้ใช้งาน (Role):**
-    *   แสดงบทบาท (Badge สี: สมาชิก-เขียว, นักแปล-ทอง, ผู้ดูแลระบบ-แดง) - Read-only
-*   **อีเมล (Email):** แสดงอีเมล (Read-only)
-*   **เปลี่ยนรหัสผ่าน:**
-    *   ปุ่ม "เปลี่ยนรหัสผ่าน" (เปิด Modal)
-    *   **Modal:** รหัสผ่านปัจจุบัน, รหัสผ่านใหม่, ยืนยันรหัสผ่านใหม่
-    *   ปุ่ม "บันทึกรหัสผ่านใหม่", "ยกเลิก"
-    *   **Toast:** "เปลี่ยนรหัสผ่านสำเร็จแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้ง" (บังคับล็อกอินใหม่)
-*   **ออกจากระบบ:**
-    *   ปุ่ม "ออกจากระบบ": Modal ยืนยัน "คุณต้องการออกจากระบบหรือไม่?"
-    *   **Toast:** "ออกจากระบบเรียบร้อยแล้ว" (Redirect ไปหน้าแรก)
-
-## 8. Key User Experience Flows & Enhancements
-
-*   **การล็อกอิน (Modal):** สะดวก รวดเร็ว
-*   **การนำทาง:** ชัดเจน เข้าใจง่าย
-*   **ประสบการณ์การอ่าน:** ลื่นไหล ปรับแต่งได้ ไม่มีสะดุด
-*   **เครื่องมือช่วยแปล:** ออกแบบมาเพื่อนักแปลโดยเฉพาะ
-*   **การตอบสนองของระบบ:** Empty/Loading States, Error Handling ที่เป็นมิตร
-*   **การออกแบบ:** สวยงาม (ทอง-เทา, Sarabun) ตอบสนองทุกอุปกรณ์
-*   **ปุ่ม Arrow Up:** (`ArrowUpCircle`) ช่วยให้กลับไปบนสุดของหน้าได้ง่าย
-*   **การแจ้งเตือนการกระทำ:** Toast notifications (มุมขวาล่าง) ชัดเจนทุกการกระทำ
-*   **การสร้าง `mark_lines` อัตโนมัติ:** เมื่อสร้างตอนใหม่ ระบบจะสร้าง record ว่างๆ ใน `mark_lines` สำหรับนักแปลเจ้าของนิยาย
-
-## 9. Tech Stack Summary
-
-*   **Framework:** SvelteKit
-*   **Styling:** TailwindCSS
-*   **UI Library:** Skeleton UI (ปรับแต่ง Theme สีทอง-เทา)
-*   **Form Handling & Validation:** Felte และ Zod
-*   **Icon Library:** Lucide-Svelte
-*   **Backend & Authentication:** Supabase Platform (PostgreSQL, Auth, Storage, Edge Functions (ถ้าจำเป็น))
-*   **ภาษา:** TypeScript
-
-## 10. การจัดการข้อผิดพลาดเบื้องต้น
-
-*   **Client-Side Validation:** Zod + Felte แสดงข้อผิดพลาดใต้ฟิลด์
-*   **Server-Side Validation:** Zod ใน SvelteKit actions/Supabase Functions
-*   **User-Facing Error Messages:** Toast ที่เป็นมิตร (ภาษาไทย)
-    *   ตัวอย่าง: "เกิดข้อผิดพลาด: ไม่สามารถบันทึกข้อมูลได้ กรุณาลองใหม่อีกครั้ง"
-    *   ตัวอย่าง: "ไม่พบข้อมูลที่ท่านค้นหา"
-*   **Code-Level Error Handling:** `try...catch`
-*   **Logging:** `console.log/error` (Dev), Supabase Logging (Prod)
-
-## 11. มาตรการความปลอดภัยเบื้องต้น
-
-*   **Authentication:** Supabase Auth, Email Verification
-*   **Authorization:** Row-Level Security (RLS) เข้มงวด (หัวใจสำคัญ)
-*   **Input Validation:** Zod (Client & Server), Sanitize HTML output
-*   **HTTPS:** ให้บริการผ่าน HTTPS
-*   **Environment Variables:** เก็บ Keys ใน `.env.local` (ห้าม commit), ใช้ Service Role Key อย่างระมัดระวัง (เฉพาะ Server-side)
-*   **Data Backups:** Supabase Auto-backup, พิจารณา Manual Backup
-*   **Principle of Least Privilege:** สิทธิ์เท่าที่จำเป็น
-*   **Software Updates:** หมั่นอัปเดต Dependencies
-
-## 12. การตั้งค่าฐานข้อมูล Supabase และ Environment
-
-### 12.1 Environment Variables
-
-สร้างไฟล์ `.env` หรือ `.env.local` ใน root ของโปรเจกต์ SvelteKit (ไฟล์นี้ไม่ควรถูก commit เข้า Git):
-
-```env
-PUBLIC_BASE_URL="http://localhost:3000" # สำหรับ Local Dev, เปลี่ยนเป็น Domain จริงสำหรับ Production
-PUBLIC_SUPABASE_URL="YOUR_SUPABASE_URL"
-PUBLIC_SUPABASE_ANON_KEY="YOUR_SUPABASE_ANON_KEY"
-
-# สำหรับ Server-side (เช่น SvelteKit actions หรือ Supabase Edge Functions)
-SUPABASE_SERVICE_ROLE_KEY="YOUR_SUPABASE_SERVICE_ROLE_KEY"
-
-12.2 ลำดับการตั้งค่าฐานข้อมูล Supabase (สำหรับ Local และ Production)
-
-สร้าง Project ใน Supabase: ไปที่ app.supabase.com และสร้างโปรเจกต์ใหม่
-
-ตั้งค่า Database:
-
-ไปที่ "SQL Editor" ใน Dashboard ของ Supabase
-
-คัดลอกและรันโค้ด SQL ทั้งหมดที่ให้ไว้ในส่วน "13. โค้ด SQL สำหรับสร้างตาราง (Supabase - PostgreSQL)" ด้านล่างนี้ทีละส่วน หรือทั้งหมดในครั้งเดียว
-
-ตั้งค่า Storage Buckets:
-
-ไปที่ "Storage" ใน Dashboard ของ Supabase
-
-สร้าง Buckets ต่อไปนี้:
-
-novel-covers
-
-avatars
-
-site-assets (สำหรับโลโก้, favicon)
-
-chapter-text-files (สำหรับ Batch Upload .txt, อาจตั้งเป็น temporary)
-
-กำหนด Policies สำหรับแต่ละ Bucket (สำคัญมาก!):
-
-novel-covers:
-
-SELECT: Public (ทุกคนสามารถดูรูปปกได้)
-
-INSERT, UPDATE, DELETE: อนุญาตเฉพาะผู้ใช้ที่ยืนยันตัวตนแล้ว (authenticated) และเป็นเจ้าของนิยาย (เช็ค author_id ของนิยาย) หรือเป็น Admin
-
-ตัวอย่าง Policy (ต้องปรับ get_my_claim('role') และ get_novel_author_id(bucket_id, name) ให้ถูกต้อง):
-
--- SELECT (Public)
-(bucket_id = 'novel-covers') AND (SELECT true);
-
--- INSERT (Authenticated owner or Admin)
-(bucket_id = 'novel-covers') AND (auth.role() = 'authenticated') AND
-(
-  (SELECT profiles.role_id FROM profiles WHERE profiles.id = auth.uid()) = (SELECT id FROM roles WHERE name = 'Admin') OR
-  (auth.uid() = (SELECT novels.author_id FROM novels WHERE novels.cover_image_url LIKE '%' || name)) -- ต้องปรับปรุง logic การหา novel_id จากชื่อไฟล์
-);
--- UPDATE, DELETE คล้าย INSERT
-IGNORE_WHEN_COPYING_START
-content_copy
-download
-Use code with caution.
-SQL
-IGNORE_WHEN_COPYING_END
-
-avatars:
-
-SELECT: Public
-
-INSERT, UPDATE: อนุญาตเฉพาะผู้ใช้ที่ยืนยันตัวตนแล้วและเป็นเจ้าของโปรไฟล์นั้นๆ (เช็ค auth.uid())
-
-ตัวอย่าง Policy (INSERT, ชื่อไฟล์ควรเป็น user_id/avatar.ext):
-
-(bucket_id = 'avatars') AND (auth.role() = 'authenticated') AND (auth.uid() = (string_to_array(name, '/'::text))[1]::uuid);
-IGNORE_WHEN_COPYING_START
-content_copy
-download
-Use code with caution.
-SQL
-IGNORE_WHEN_COPYING_END
-
-site-assets:
-
-SELECT: Public
-
-INSERT, UPDATE, DELETE: อนุญาตเฉพาะ Admin
-
-chapter-text-files:
-
-SELECT: ไม่อนุญาต (ไฟล์ควรถูกประมวลผลและลบโดย server-side logic)
-
-INSERT: อนุญาตเฉพาะนักแปล/Admin ที่กำลังอัปโหลด
-
-DELETE: อนุญาตให้ Server-side logic (ใช้ Service Role Key) หรือผู้ที่อัปโหลดลบได้
-
-หมายเหตุ: Bucket นี้ควรมีการจัดการไฟล์ที่เข้มงวด อาจมี Edge Function คอยลบไฟล์หลังประมวลผล
-
-ตั้งค่า Authentication:
-
-ไปที่ "Authentication" -> "Providers" และเปิดใช้งาน Email และ Google (ถ้าต้องการ)
-
-ไปที่ "Authentication" -> "Settings" และตั้งค่า Site URL (สำหรับลิงก์ยืนยันอีเมล, etc.) ให้ตรงกับ PUBLIC_BASE_URL ของคุณ
-
-สำหรับ Local Dev: http://localhost:3000
-
-สำหรับ Production: https://inkrealm.co
-
-(แนะนำ) ปรับแต่ง Email Templates ให้เป็นภาษาไทย
-
-ตั้งค่า Row-Level Security (RLS):
-
-ไปที่ "Authentication" -> "Policies"
-
-สำหรับ ทุกตาราง ที่มีข้อมูลสำคัญ (เช่น novels, chapters, profiles, mark_lines) ให้ Enable RLS
-
-สร้าง Policies สำหรับ SELECT, INSERT, UPDATE, DELETE ตามบทบาทและสิทธิ์ที่กำหนดไว้
-
-นี่คือส่วนที่สำคัญที่สุดสำหรับความปลอดภัยของข้อมูล ตัวอย่างคร่าวๆ:
-
-ตาราง novels:
-
-SELECT: ทุกคนเห็นนิยายที่ visibility เป็น 'ทุกคน' หรือสมาชิกเห็น 'เฉพาะสมาชิก' หรือตรงตามบทบาท
-
-INSERT: เฉพาะ 'Translator' หรือ 'Admin'
-
-UPDATE, DELETE: เฉพาะ author_id ของนิยายนั้นๆ หรือ 'Admin'
-
-ดูตัวอย่างการเขียน RLS Policy ในส่วน SQL ด้านล่าง
-
-(Local Dev) รัน SvelteKit:
-
-npm run dev (หรือ pnpm dev, yarn dev)
-
-เปิดเบราว์เซอร์ไปที่ http://localhost:3000
-
-13. โค้ด SQL สำหรับสร้างตาราง (Supabase - PostgreSQL)
--- ### EXTENSIONS ###
--- (Supabase อาจเปิดใช้งานบางส่วนให้อยู่แล้ว ตรวจสอบใน Dashboard -> Database -> Extensions)
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; -- สำหรับ uuid_generate_v4()
-CREATE EXTENSION IF NOT EXISTS "moddatetime"; -- สำหรับ trigger อัปเดต updated_at
-
--- ### SEQUENCES ###
--- (ถ้าไม่ใช้ SERIAL แต่ต้องการ custom sequence)
-
--- ### TABLES ###
-
--- 1. ตารางบทบาทผู้ใช้ (Roles)
-CREATE TABLE IF NOT EXISTS public.roles (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
-    description TEXT
-);
-COMMENT ON TABLE public.roles IS 'ตารางเก็บประเภทบทบาทของผู้ใช้';
-COMMENT ON COLUMN public.roles.name IS 'ชื่อบทบาท (Member, Translator, Admin)';
-
--- 2. ตารางโปรไฟล์ผู้ใช้ (Profiles)
-CREATE TABLE IF NOT EXISTS public.profiles (
-    id UUID PRIMARY KEY DEFAULT auth.uid() REFERENCES auth.users(id) ON DELETE CASCADE,
-    email TEXT UNIQUE, -- อาจดึงจาก auth.users.email หรือเก็บแยกเพื่อความสะดวก
-    display_name TEXT,
-    avatar_url TEXT,
-    role_id INTEGER NOT NULL REFERENCES public.roles(id) DEFAULT 1, -- Default to 'Member'
-    role_expiry_date TIMESTAMP WITH TIME ZONE,
-    is_suspended BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-COMMENT ON TABLE public.profiles IS 'ตารางเก็บข้อมูลโปรไฟล์เพิ่มเติมของผู้ใช้ เชื่อมกับ auth.users';
-COMMENT ON COLUMN public.profiles.id IS 'UUID ของผู้ใช้, อ้างอิงจาก auth.users.id';
-COMMENT ON COLUMN public.profiles.role_id IS 'FK อ้างอิงบทบาทจากตาราง roles';
-COMMENT ON COLUMN public.profiles.role_expiry_date IS 'วันที่หมดอายุของบทบาท (ถ้ามี)';
-
--- 3. ตารางหมวดหมู่นิยาย (Categories)
-CREATE TABLE IF NOT EXISTS public.categories (
-    id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
-    slug TEXT NOT NULL UNIQUE,
-    description TEXT
-);
-COMMENT ON TABLE public.categories IS 'ตารางเก็บหมวดหมู่ของนิยาย';
-
--- 4. ตารางนิยาย (Novels)
-CREATE TABLE IF NOT EXISTS public.novels (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    title TEXT NOT NULL,
-    slug TEXT NOT NULL UNIQUE,
-    synopsis TEXT,
-    cover_image_url TEXT, -- URL ไปยัง Supabase Storage
-    category_id INTEGER REFERENCES public.categories(id) ON DELETE SET NULL,
-    author_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL, -- ผู้สร้าง/นักแปลหลัก
-    status TEXT DEFAULT 'กำลังดำเนินการ' NOT NULL, -- เช่น 'กำลังดำเนินการ', 'จบแล้ว', 'พักการลง'
-    visibility TEXT[] DEFAULT ARRAY['ทุกคน']::TEXT[], -- เช่น 'ทุกคน', 'เฉพาะสมาชิก', 'เฉพาะนักแปล'
-    original_language CHAR(2) NOT NULL, -- 'zh', 'en', 'th'
-    default_chapter_status TEXT DEFAULT 'เผยแพร่' NOT NULL, -- 'เผยแพร่', 'ฉบับร่าง' (สำหรับตอนใหม่ของนิยายนี้)
-    default_chapter_access_level TEXT[] DEFAULT ARRAY['ทุกคน']::TEXT[], -- (สำหรับตอนใหม่ของนิยายนี้)
-    word_count INTEGER DEFAULT 0, -- อาจจะรวมจากทุกตอน หรืออัปเดตเป็นระยะ
-    total_chapters INTEGER DEFAULT 0, -- จำนวนตอนทั้งหมด
-    last_published_at TIMESTAMP WITH TIME ZONE, -- วันที่ตอนล่าสุดเผยแพร่
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-COMMENT ON TABLE public.novels IS 'ตารางเก็บข้อมูลหลักของนิยายแต่ละเรื่อง';
-COMMENT ON COLUMN public.novels.author_id IS 'ผู้สร้างนิยาย หรือนักแปลหลักที่ได้รับสิทธิ์จัดการ';
-COMMENT ON COLUMN public.novels.visibility IS 'กำหนดว่าใครสามารถมองเห็นนิยายนี้ได้บ้าง';
-
--- 5. ตารางตอนของนิยาย (Chapters)
-CREATE TABLE IF NOT EXISTS public.chapters (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    novel_id UUID NOT NULL REFERENCES public.novels(id) ON DELETE CASCADE,
-    chapter_number INTEGER NOT NULL,
-    title TEXT NOT NULL,
-    -- slug TEXT, -- อาจจะไม่จำเป็นถ้าใช้ chapter_number ใน URL โดยตรง
-    content_original TEXT, -- เนื้อหาต้นฉบับ (เช่น ภาษาจีน)
-    content_display TEXT, -- เนื้อหาที่แสดงผล (เช่น ภาษาไทยที่แปลแล้ว หรือเนื้อหาที่จัดรูปแบบแล้ว)
-    status TEXT DEFAULT 'เผยแพร่' NOT NULL, -- 'เผยแพร่', 'ฉบับร่าง'
-    access_level TEXT[] DEFAULT ARRAY['ทุกคน']::TEXT[], -- 'ทุกคน', 'เฉพาะสมาชิก', 'เฉพาะนักแปล'
-    word_count INTEGER DEFAULT 0,
-    -- read_by_users JSONB, -- อาจจะซับซ้อนไป พิจารณาตารางแยกถ้าต้องการเก็บละเอียดว่าใครอ่านตอนไหนบ้าง
-    created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL, -- ผู้สร้าง/แก้ไขตอนล่าสุด
-    published_at TIMESTAMP WITH TIME ZONE, -- วันที่เผยแพร่ตอนนี้
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (novel_id, chapter_number)
-);
-COMMENT ON TABLE public.chapters IS 'ตารางเก็บเนื้อหาของแต่ละตอนในนิยาย';
-COMMENT ON COLUMN public.chapters.content_original IS 'เนื้อหาต้นฉบับก่อนการแปลหรือการแก้ไขหลัก';
-COMMENT ON COLUMN public.chapters.content_display IS 'เนื้อหาที่จัดรูปแบบและพร้อมแสดงผลแก่ผู้อ่าน';
-
--- 6. ตารางบุ๊คมาร์คของผู้ใช้ (User Bookmarks)
-CREATE TABLE IF NOT EXISTS public.user_bookmarks (
-    id SERIAL PRIMARY KEY,
-    user_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    novel_id UUID NOT NULL REFERENCES public.novels(id) ON DELETE CASCADE,
-    chapter_id UUID NOT NULL REFERENCES public.chapters(id) ON DELETE CASCADE,
-    bookmarked_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (user_id, chapter_id) -- ผู้ใช้คนหนึ่งบุ๊คมาร์คตอนหนึ่งได้ครั้งเดียว
-);
-COMMENT ON TABLE public.user_bookmarks IS 'ตารางเก็บข้อมูลการบุ๊คมาร์คตอนนิยายของผู้ใช้';
-
--- 7. ตารางบรรทัดที่มาร์คโดยนักแปล (Mark Lines)
-CREATE TABLE IF NOT EXISTS public.mark_lines (
-    id BIGSERIAL PRIMARY KEY,
-    chapter_id UUID NOT NULL REFERENCES public.chapters(id) ON DELETE CASCADE,
-    translator_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-    line_number INTEGER NOT NULL, -- เลขบรรทัดภายใน content_original ของตอนนั้นๆ
-    original_text_segment TEXT, -- ส่วนของข้อความต้นฉบับที่ถูกมาร์ค (เพื่อความสะดวกในการ export)
-    marked_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE (chapter_id, translator_id, line_number)
-);
-COMMENT ON TABLE public.mark_lines IS 'ตารางเก็บข้อมูลบรรทัดที่นักแปลมาร์คไว้ในแต่ละตอน';
-COMMENT ON COLUMN public.mark_lines.line_number IS 'เลขบรรทัดอ้างอิงตามเนื้อหาต้นฉบับ (content_original) ของตอน';
-COMMENT ON COLUMN public.mark_lines.original_text_segment IS 'ข้อความของบรรทัดต้นฉบับที่ถูกมาร์ค';
-
--- 8. ตารางประกาศ (Announcements)
-CREATE TABLE IF NOT EXISTS public.announcements (
-    id SERIAL PRIMARY KEY,
-    title TEXT NOT NULL,
-    content TEXT NOT NULL, -- รองรับ Markdown
-    start_date TIMESTAMP WITH TIME ZONE,
-    end_date TIMESTAMP WITH TIME ZONE,
-    target_roles TEXT[] DEFAULT ARRAY['ทุกคน']::TEXT[], -- เช่น 'Member', 'Translator', 'Admin' (อ้างอิงจาก roles.name)
-    target_pages TEXT[] DEFAULT ARRAY['หน้าแรก']::TEXT[], -- เช่น 'หน้าแรก', 'หน้านิยายทั้งหมด', 'หน้านิยายเฉพาะเรื่อง:[novel_id]'
-    is_active BOOLEAN DEFAULT TRUE,
-    created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-COMMENT ON TABLE public.announcements IS 'ตารางสำหรับประกาศจากผู้ดูแลระบบ';
-
--- 9. ตารางการตั้งค่าเว็บไซต์ (Site Settings)
-CREATE TABLE IF NOT EXISTS public.site_settings (
-    key TEXT PRIMARY KEY,
-    value JSONB NOT NULL,
-    description TEXT,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-COMMENT ON TABLE public.site_settings IS 'ตารางเก็บการตั้งค่าต่างๆ ของเว็บไซต์';
-COMMENT ON COLUMN public.site_settings.key IS 'Key ของการตั้งค่า เช่น site_name, default_pagination, etc.';
-COMMENT ON COLUMN public.site_settings.value IS 'Value ของการตั้งค่าในรูปแบบ JSONB';
-
--- 10. ตารางประวัติการเปลี่ยนแปลงเว็บไซต์ (Site Changelogs)
-CREATE TABLE IF NOT EXISTS public.site_changelogs (
-    id SERIAL PRIMARY KEY,
-    version_number TEXT NOT NULL UNIQUE,
-    release_date DATE NOT NULL,
-    summary TEXT NOT NULL, -- รองรับ Markdown
-    is_published BOOLEAN DEFAULT FALSE,
-    created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-COMMENT ON TABLE public.site_changelogs IS 'ตารางเก็บ Changelog ของเว็บไซต์';
-
--- 11. ตารางเวอร์ชันของข้อมูลนิยาย (Novel Versions)
-CREATE TABLE IF NOT EXISTS public.novel_versions (
-    id SERIAL PRIMARY KEY,
-    novel_id UUID NOT NULL REFERENCES public.novels(id) ON DELETE CASCADE,
-    version_number INTEGER NOT NULL,
-    metadata_snapshot JSONB NOT NULL, -- เก็บ Snapshot ของข้อมูลนิยาย (title, synopsis, category, etc.)
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL, -- ผู้ที่ทำให้เกิดเวอร์ชันนี้
-    notes TEXT, -- หมายเหตุเกี่ยวกับการเปลี่ยนแปลง
-    UNIQUE(novel_id, version_number)
-);
-COMMENT ON TABLE public.novel_versions IS 'ตารางเก็บประวัติการเปลี่ยนแปลงข้อมูลเมตาของนิยาย';
-
--- 12. ตารางเวอร์ชันของเนื้อหาตอน (Chapter Versions)
-CREATE TABLE IF NOT EXISTS public.chapter_versions (
-    id SERIAL PRIMARY KEY,
-    chapter_id UUID NOT NULL REFERENCES public.chapters(id) ON DELETE CASCADE,
-    version_number INTEGER NOT NULL,
-    content_original_snapshot TEXT,
-    content_display_snapshot TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    created_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL, -- ผู้ที่ทำให้เกิดเวอร์ชันนี้
-    notes TEXT, -- หมายเหตุเกี่ยวกับการเปลี่ยนแปลง
-    UNIQUE(chapter_id, version_number)
-);
-COMMENT ON TABLE public.chapter_versions IS 'ตารางเก็บประวัติการเปลี่ยนแปลงเนื้อหาของตอน';
-
--- ### FUNCTIONS & TRIGGERS ###
-
--- Function to update 'updated_at' column
-CREATE OR REPLACE FUNCTION public.handle_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Triggers for 'updated_at'
-CREATE TRIGGER on_profiles_update
-    BEFORE UPDATE ON public.profiles
-    FOR EACH ROW EXECUTE PROCEDURE public.handle_updated_at();
-
-CREATE TRIGGER on_novels_update
-    BEFORE UPDATE ON public.novels
-    FOR EACH ROW EXECUTE PROCEDURE public.handle_updated_at();
-
-CREATE TRIGGER on_chapters_update
-    BEFORE UPDATE ON public.chapters
-    FOR EACH ROW EXECUTE PROCEDURE public.handle_updated_at();
-
-CREATE TRIGGER on_announcements_update
-    BEFORE UPDATE ON public.announcements
-    FOR EACH ROW EXECUTE PROCEDURE public.handle_updated_at();
-
-CREATE TRIGGER on_site_settings_update
-    BEFORE UPDATE ON public.site_settings
-    FOR EACH ROW EXECUTE PROCEDURE public.handle_updated_at();
-
--- Function to get user role name
-CREATE OR REPLACE FUNCTION public.get_user_role(user_id UUID)
-RETURNS TEXT AS $$
-DECLARE
-    role_name TEXT;
-BEGIN
-    SELECT r.name INTO role_name
-    FROM public.profiles p
-    JOIN public.roles r ON p.role_id = r.id
-    WHERE p.id = user_id;
-    RETURN role_name;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER; -- SECURITY DEFINER ถ้าจำเป็นต้องอ่าน roles โดยไม่สน RLS ของ roles เอง
-
--- ### INITIAL DATA ###
-INSERT INTO public.roles (name, description) VALUES
-    ('Member', 'สมาชิกทั่วไป สามารถอ่านนิยาย บุ๊คมาร์ค'),
-    ('Translator', 'นักแปล สามารถสร้าง จัดการ และแปลนิยายของตนเองได้'),
-    ('Admin', 'ผู้ดูแลระบบ มีสิทธิ์จัดการทุกอย่างในระบบ')
-ON CONFLICT (name) DO NOTHING;
-
--- ตัวอย่างการตั้งค่าเริ่มต้นใน site_settings
-INSERT INTO public.site_settings (key, value, description) VALUES
-    ('site_name', '{"value": "INKREALM.CO"}', 'ชื่อเว็บไซต์หลัก'),
-    ('site_description', '{"value": "แพลตฟอร์มนิยายแปลคุณภาพสำหรับทุกคน"}', 'คำอธิบายเว็บไซต์สำหรับ SEO'),
-    ('allow_new_registration', '{"value": true}', 'เปิด/ปิดการลงทะเบียนผู้ใช้ใหม่'),
-    ('allow_google_login', '{"value": true}', 'เปิด/ปิดการเข้าสู่ระบบด้วย Google'),
-    ('default_items_per_page', '{"value": 20}', 'จำนวนรายการเริ่มต้นต่อหน้าสำหรับการแบ่งหน้า'),
-    ('novel_default_chapter_status', '{"value": "เผยแพร่"}', 'สถานะเริ่มต้นของตอนใหม่สำหรับนิยายที่สร้างใหม่'),
-    ('novel_default_chapter_access', '{"value": ["ทุกคน"]}', 'สิทธิ์การเข้าถึงเริ่มต้นของตอนใหม่สำหรับนิยายที่สร้างใหม่')
-ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, description = EXCLUDED.description;
-
-
--- ### ROW-LEVEL SECURITY (RLS) POLICIES - ตัวอย่าง ###
--- **สำคัญมาก: ต้องเปิดใช้งาน RLS สำหรับแต่ละตารางใน Supabase Dashboard ก่อน Policy เหล่านี้จึงจะมีผล**
--- **และ Policy ที่ให้นี้เป็นเพียงตัวอย่างเบื้องต้น ต้องปรับแก้ให้ละเอียดและครอบคลุมทุกกรณีตามความต้องการจริง**
-
--- **Profiles Table**
-ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "ผู้ใช้สามารถดูโปรไฟล์ตัวเองได้"
-    ON public.profiles FOR SELECT
-    USING (auth.uid() = id);
-
-CREATE POLICY "ผู้ใช้สามารถอัปเดตโปรไฟล์ตัวเองได้"
-    ON public.profiles FOR UPDATE
-    USING (auth.uid() = id)
-    WITH CHECK (auth.uid() = id);
-
-CREATE POLICY "Admin สามารถจัดการโปรไฟล์ทั้งหมดได้"
-    ON public.profiles FOR ALL -- SELECT, INSERT, UPDATE, DELETE
-    USING (public.get_user_role(auth.uid()) = 'Admin')
-    WITH CHECK (public.get_user_role(auth.uid()) = 'Admin');
-
--- **Novels Table**
-ALTER TABLE public.novels ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "ทุกคนสามารถดูนิยายที่ตั้งค่าเป็น 'ทุกคน' หรือตามสิทธิ์"
-    ON public.novels FOR SELECT
-    USING (
-        'ทุกคน' = ANY(visibility) OR
-        (auth.role() = 'authenticated' AND 'เฉพาะสมาชิก' = ANY(visibility)) OR
-        (auth.role() = 'authenticated' AND public.get_user_role(auth.uid()) = ANY(visibility)) OR -- กรณี 'เฉพาะนักแปล', 'เฉพาะผู้ดูแลระบบ'
-        (public.get_user_role(auth.uid()) = 'Admin') -- Admin เห็นหมด
-    );
-
-CREATE POLICY "นักแปลและ Admin สามารถสร้างนิยายได้"
-    ON public.novels FOR INSERT
-    WITH CHECK (
-        auth.role() = 'authenticated' AND
-        (public.get_user_role(auth.uid()) IN ('Translator', 'Admin')) AND
-        author_id = auth.uid() -- ผู้สร้างต้องเป็นตัวเอง
-    );
-
-CREATE POLICY "เจ้าของนิยายและ Admin สามารถแก้ไข/ลบนิยายได้"
-    ON public.novels FOR UPDATE, DELETE
-    USING (
-        auth.role() = 'authenticated' AND
-        (
-            (author_id = auth.uid() AND public.get_user_role(auth.uid()) IN ('Translator', 'Admin')) OR
-            (public.get_user_role(auth.uid()) = 'Admin')
-        )
-    );
-
--- **Chapters Table**
-ALTER TABLE public.chapters ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "การเข้าถึงตอนขึ้นอยู่กับการตั้งค่าของตอนและนิยายแม่"
-    ON public.chapters FOR SELECT
-    USING (
-        EXISTS (
-            SELECT 1 FROM public.novels n
-            WHERE n.id = chapters.novel_id AND (
-                'ทุกคน' = ANY(n.visibility) OR
-                (auth.role() = 'authenticated' AND 'เฉพาะสมาชิก' = ANY(n.visibility)) OR
-                (auth.role() = 'authenticated' AND public.get_user_role(auth.uid()) = ANY(n.visibility)) OR
-                (public.get_user_role(auth.uid()) = 'Admin')
-            )
-        ) AND (
-            status = 'เผยแพร่' AND (
-                'ทุกคน' = ANY(access_level) OR
-                (auth.role() = 'authenticated' AND 'เฉพาะสมาชิก' = ANY(access_level)) OR
-                (auth.role() = 'authenticated' AND public.get_user_role(auth.uid()) = ANY(access_level))
-            ) OR
-            -- เจ้าของนิยาย หรือ Admin สามารถเห็นตอนที่เป็นฉบับร่างได้
-            (EXISTS (SELECT 1 FROM public.novels n WHERE n.id = chapters.novel_id AND n.author_id = auth.uid())) OR
-            (public.get_user_role(auth.uid()) = 'Admin')
-        )
-    );
-
-
-CREATE POLICY "เจ้าของนิยายและ Admin สามารถสร้าง/แก้ไข/ลบตอนได้"
-    ON public.chapters FOR INSERT, UPDATE, DELETE
-    USING (
-        auth.role() = 'authenticated' AND
-        EXISTS (
-            SELECT 1 FROM public.novels n
-            WHERE n.id = chapters.novel_id AND
-            (
-                (n.author_id = auth.uid() AND public.get_user_role(auth.uid()) IN ('Translator', 'Admin')) OR
-                (public.get_user_role(auth.uid()) = 'Admin')
-            )
-        )
-    )
-    WITH CHECK ( -- สำหรับ INSERT และ UPDATE
-        auth.role() = 'authenticated' AND
-        EXISTS (
-            SELECT 1 FROM public.novels n
-            WHERE n.id = chapters.novel_id AND
-            (
-                (n.author_id = auth.uid() AND public.get_user_role(auth.uid()) IN ('Translator', 'Admin')) OR
-                (public.get_user_role(auth.uid()) = 'Admin')
-            )
-        )
-        -- สำหรับ INSERT, created_by ควรเป็นผู้ใช้ปัจจุบัน
-        AND (TG_OP = 'DELETE' OR chapters.created_by ISNULL OR chapters.created_by = auth.uid())
-    );
-
-
--- **Mark Lines Table**
-ALTER TABLE public.mark_lines ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "นักแปลสามารถจัดการมาร์คของตัวเองในตอนที่เขามีสิทธิ์"
-    ON public.mark_lines FOR ALL -- SELECT, INSERT, UPDATE, DELETE
-    USING (
-        auth.role() = 'authenticated' AND
-        translator_id = auth.uid() AND
-        EXISTS ( -- ตรวจสอบว่านักแปลมีสิทธิ์ในนิยายของตอนนี้
-            SELECT 1 FROM public.chapters c
-            JOIN public.novels n ON c.novel_id = n.id
-            WHERE c.id = mark_lines.chapter_id AND n.author_id = auth.uid()
-        )
-    )
-    WITH CHECK (
-        auth.role() = 'authenticated' AND
-        translator_id = auth.uid() AND
-        EXISTS (
-            SELECT 1 FROM public.chapters c
-            JOIN public.novels n ON c.novel_id = n.id
-            WHERE c.id = mark_lines.chapter_id AND n.author_id = auth.uid()
-        )
-    );
-
-CREATE POLICY "Admin สามารถดูมาร์คทั้งหมดได้"
-    ON public.mark_lines FOR SELECT
-    USING (public.get_user_role(auth.uid()) = 'Admin');
-
-
--- **User Bookmarks Table**
-ALTER TABLE public.user_bookmarks ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "ผู้ใช้สามารถจัดการบุ๊คมาร์คของตัวเองได้"
-    ON public.user_bookmarks FOR ALL
-    USING (auth.uid() = user_id)
-    WITH CHECK (auth.uid() = user_id);
-
--- **หมายเหตุสำคัญเกี่ยวกับ RLS:**
--- 1. Policy ข้างต้นเป็นตัวอย่างเบื้องต้นและอาจจะต้องปรับปรุงให้ซับซ้อนขึ้นตาม use case จริง
--- 2. การใช้ `public.get_user_role(auth.uid())` บ่อยครั้งอาจมีผลต่อ performance พิจารณา denormalize role name ใน profiles table หรือ optimize function
--- 3. การตรวจสอบสิทธิ์ซ้อนกัน (เช่น เช็คสิทธิ์นิยายก่อนเช็คสิทธิ์ตอน) เป็นสิ่งสำคัญ
--- 4. ทดสอบ Policy ทั้งหมดอย่างละเอียด!
-
--- **การดูข้อมูล Mark Lines แบบเข้าใจง่าย (ตัวอย่าง Query):**
--- SELECT
---     ml.id AS mark_id,
---     p_translator.display_name AS translator_name,
---     p_translator.email AS translator_email,
---     n.title AS novel_title,
---     n.slug AS novel_slug,
---     c.chapter_number,
---     c.title AS chapter_title,
---     ml.line_number,
---     ml.original_text_segment,
---     ml.marked_at
--- FROM
---     public.mark_lines ml
--- JOIN
---     public.chapters c ON ml.chapter_id = c.id
--- JOIN
---     public.novels n ON c.novel_id = n.id
--- JOIN
---     public.profiles p_translator ON ml.translator_id = p_translator.id
--- WHERE
---     n.slug = 'your-novel-slug' -- (Optional) กรองตามนิยาย
--- ORDER BY
---     n.title, c.chapter_number, ml.line_number;
-IGNORE_WHEN_COPYING_START
-content_copy
-download
-Use code with caution.
-SQL
-IGNORE_WHEN_COPYING_END
-หวังว่าเอกสาร README.md และโค้ด SQL นี้จะครอบคลุมและละเอียดตามที่คุณต้องการนะครับ! หากมีส่วนไหนต้องการปรับแก้อีก แจ้งได้เลยครับ
-IGNORE_WHEN_COPYING_START
-content_copy
-download
-Use code with caution.
-IGNORE_WHEN_COPYING_END
+    *   **ฟิลด์:**
+        *   หัวข้อ (`announcements.title` - Input text)
+        *   เนื้อหา (`announcements.content` - Textarea รองรับ Markdown, มี Preview)
+        *   วันที่เริ่มแสดง (`Date Picker` + `Time Picker` - `announcements.start_date`)
+        *   วันที่สิ้นสุดการแสดง (`Date Picker` + `Time Picker` - `announcements.end_date`)
+        *   หน้าที่แสดง (`Checkbox Group`: "หน้าแรก", "หน้านิยาย (ทุกเรื่อง)", "หน้านิยาย (เฉพาะเรื่อง)" (ถ้าเลือกอันนี้มี Input ให้ใส่ novel_slug), ...)
+        *   กลุ่มผู้รับ (`Checkbox Group` ดึงจาก `roles.name`: "ทุกคน", "Member", "Translator", "Admin")
+        *   สถานะ "ใช้งาน" (`Toggle Switch` - `announcements.is_active`)
+    *   **ปุ่ม:** "บันทึกประกาศ", "ยกเลิก"
+        *   **Action (บันทึก):** `INSERT` หรือ `UPDATE announcements ...`
+        *   **Toast (สร้าง):** `"สร้างประกาศ '[หัวข้อประกาศ]' สำเร็จแล้ว"`
+        *   **Toast (แก้ไข):** `"อัปเดตประกาศ '[หัวข้อประกาศ]' สำเร็จแล้ว"`
+*   **Tech Stack:** SvelteKit, Skeleton UI (Table, Button, Modal, Input, Textarea, Date Picker, Checkbox, Toggle), Supabase (CRUD `announcements`)
+
+---
+
+#### 8.6.5 หน้าจัดการเว็บไซต์ (Site Management Page - `/admin/dashboard/site-settings`)
+
+*   **หัวเรื่อง:** "จัดการเว็บไซต์"
+*   **Layout:** หน้าเพจปกติภายใน Admin Dashboard, แบ่งเป็น Section ชัดเจน
+*   **UI (ดึง/บันทึกข้อมูลจาก `site_settings` table):**
+    *   **ส่วนทั่วไป (General Settings):**
+        *   ชื่อเว็บไซต์: `Input text` (key: `site_name`)
+        *   คำอธิบายเว็บไซต์ (SEO): `Textarea` (key: `site_description`)
+        *   โลโก้เว็บไซต์: `File Input` (อัปโหลดไป `site_assets` bucket, เก็บ URL ใน key: `site_logo_url`), Preview รูปปัจจุบัน
+            *   **Toast (อัปโหลดสำเร็จ):** `"อัปเดตโลโก้เว็บไซต์แล้ว"`
+        *   Favicon: `File Input` (อัปโหลดไป `site_assets`, เก็บ URL ใน key: `site_favicon_url`), Preview รูปปัจจุบัน
+            *   **Toast (อัปโหลดสำเร็จ):** `"อัปเดต Favicon แล้ว"`
+    *   **ส่วนการลงทะเบียนและการเข้าสู่ระบบ (Registration & Login Settings):**
+        *   เปิด/ปิดการลงทะเบียนใหม่: `Toggle Switch` (key: `allow_new_registrations`, value: true/false)
+        *   เปิด/ปิดการเข้าสู่ระบบด้วย Google: `Toggle Switch` (key: `allow_google_login`, value: true/false)
+    *   **ส่วนเนื้อหา (Content Settings):**
+        *   จำนวนรายการต่อหน้าเริ่มต้น (Pagination): `Input number` (key: `default_items_per_page`)
+        *   การตั้งค่าเริ่มต้นสำหรับนิยายใหม่ (เมื่อ Admin สร้างจาก Backend หรือค่า Fallback):
+            *   สถานะตอนเริ่มต้น: `Select` ("เผยแพร่", "ฉบับร่าง") (key: `new_novel_default_chapter_status`)
+            *   สิทธิ์เข้าถึงตอนเริ่มต้น: `Checkbox Group` ("ทุกคน", "เฉพาะสมาชิก", "เฉพาะนักแปล") (key: `new_novel_default_chapter_access_level`)
+    *   **ปุ่มดำเนินการ:** "บันทึกการตั้งค่าทั้งหมด"
+        *   **Action:** `UPDATE site_settings SET value = ... WHERE key = ...` สำหรับทุก key ที่แก้ไข
+        *   **Toast:** `"บันทึกการตั้งค่าเว็บไซต์เรียบร้อยแล้ว"`
+*   **Tech Stack:** SvelteKit, Skeleton UI (Input, Textarea, File Input, Toggle, Select, Checkbox, Button), Supabase (CRUD `site_settings`), Supabase Storage (`site_assets`)
+
+---
+
+#### 8.6.6 หน้าจัดการเวอร์ชัน (Version Management Page - `/admin/dashboard/versions`)
+
+*   **หัวเรื่อง:** "จัดการเวอร์ชัน"
+*   **Layout:** `Tabs` (Skeleton UI) แยกประเภทเวอร์ชัน
+*   **Tab 1: เวอร์ชันเว็บไซต์ / Changelog (`site_changelogs` table):**
+    *   **UI:**
+        *   ปุ่ม "เพิ่ม Changelog ใหม่" (ไอคอน `PlusSquare`)
+            *   **Action:** เปิด Modal เพิ่ม/แก้ไข Changelog:
+                *   **ฟิลด์:** หมายเลขเวอร์ชัน (`site_changelogs.version_number` - text), วันที่เผยแพร่ (`site_changelogs.release_date` - Date Picker), สรุปการเปลี่ยนแปลง (`site_changelogs.summary` - Textarea รองรับ Markdown, มี Preview), สถานะ (`site_changelogs.is_published` - Toggle "เผยแพร่/ฉบับร่าง")
+                *   **ปุ่ม:** "บันทึก", "ยกเลิก"
+                *   **Toast (สร้าง):** `"เพิ่ม Changelog เวอร์ชัน [หมายเลขเวอร์ชัน] สำเร็จ"`
+                *   **Toast (แก้ไข):** `"อัปเดต Changelog เวอร์ชัน [หมายเลขเวอร์ชัน] สำเร็จ"`
+        *   **ตาราง Changelog:**
+            *   **คอลัมน์:** หมายเลขเวอร์ชัน, วันที่เผยแพร่, สรุป (แสดงส่วนหนึ่ง), สถานะ (Badge), ปุ่ม: "แก้ไข", "ลบ" (Modal ยืนยัน, Toast `"ลบ Changelog เวอร์ชัน [หมายเลขเวอร์ชัน] สำเร็จ"`)
+*   **Tab 2: เวอร์ชันนิยายและตอน (`novel_versions`, `chapter_versions` tables):**
+    *   **ส่วนค้นหานิยาย:** `Input text` ค้นหาตามชื่อเรื่องนิยาย
+    *   **รายการนิยาย (หลังค้นหา หรือแสดงทั้งหมดแบบแบ่งหน้า):**
+        *   **แต่ละรายการ:** ชื่อนิยาย, ปุ่ม "ดูประวัติเวอร์ชันนิยาย" (ไอคอน `History`), ปุ่ม "ดูประวัติเวอร์ชันตอน" (ไอคอน `FileClock`)
+    *   **เมื่อคลิก "ดูประวัติเวอร์ชันนิยาย" (สำหรับนิยายที่เลือก):**
+        *   **แสดง Modal หรือ Section ใหม่:**
+            *   **หัวเรื่อง:** "ประวัติเวอร์ชันข้อมูลของนิยาย: [ชื่อนิยาย]"
+            *   **ตาราง `novel_versions`:** เวอร์ชัน (`version_number`), วันที่ (`created_at`), ผู้แก้ไข (จาก `created_by` JOIN `profiles.display_name`), หมายเหตุ (`notes`), ปุ่ม: "ดูรายละเอียด" (เปิด Modal แสดง `metadata_snapshot` แบบสวยงาม), "กู้คืนเวอร์ชันนี้"
+                *   **Action (กู้คืน):** Modal ยืนยัน "คุณต้องการกู้คืนข้อมูลนิยายเป็นเวอร์ชัน [X] หรือไม่? ข้อมูลปัจจุบันจะถูกเก็บเป็นเวอร์ชันใหม่"
+                    *   **ยืนยัน:** อ่าน `metadata_snapshot` ของเวอร์ชันที่เลือก, `UPDATE novels SET ...` ด้วยข้อมูลนั้น, สร้าง `novel_versions` record ใหม่สำหรับข้อมูล *ก่อน* การกู้คืน.
+                    *   **Toast:** `"กู้คืนข้อมูลนิยายเป็นเวอร์ชัน [X] สำเร็จแล้ว"`
+    *   **เมื่อคลิก "ดูประวัติเวอร์ชันตอน" (สำหรับนิยายที่เลือก):**
+        *   **แสดง Modal หรือ Section ใหม่:**
+            *   **หัวเรื่อง:** "ประวัติเวอร์ชันเนื้อหาตอนของนิยาย: [ชื่อนิยาย]"
+            *   `Select` (Dropdown) เลือกตอนของนิยายนั้น (จาก `chapters` table)
+            *   **เมื่อเลือกตอน:**
+                *   **ตาราง `chapter_versions` (สำหรับตอนที่เลือก):** เวอร์ชัน (`version_number`), วันที่ (`created_at`), ผู้แก้ไข (จาก `created_by`), หมายเหตุ (`notes`), ปุ่ม: "ดูเนื้อหา" (เปิด Modal แสดง `content_original_snapshot`), "กู้คืนเวอร์ชันนี้"
+                    *   **Action (กู้คืน):** Modal ยืนยัน. `UPDATE chapters SET content_original = ...` ด้วย `content_original_snapshot` นั้น, สร้าง `chapter_versions` record ใหม่สำหรับเนื้อหา *ก่อน* การกู้คืน.
+                    *   **Toast:** `"กู้คืนเนื้อหาตอน '[ชื่อตอน]' เป็นเวอร์ชัน [X] สำเร็จแล้ว"`
+*   **Tech Stack:** Skeleton UI (Tabs, Table, Modal, Input, Textarea, Date Picker, Dropdown, Button), Supabase (CRUD `site_changelogs`, query `novel_versions`, `chapter_versions`, `novels`, `chapters`)
+
+---
+
+### 8.7 หน้าโปรไฟล์ (Profile Page - `/profile`)
+
+*   **การนำทาง:** จากเมนู Dropdown ของ Avatar ผู้ใช้ใน Navbar
+*   **หัวเรื่อง:** "โปรไฟล์ของฉัน"
+*   **Layout:** หน้าเพจเดียว, ใช้ Card จัดกลุ่มข้อมูล
+*   **UI (ดึง/บันทึกข้อมูลจาก `profiles` และ `auth.users`):**
+    *   **รูปโปรไฟล์ (Avatar):**
+        *   แสดง Avatar ปัจจุบัน (`profiles.avatar_url`) (Skeleton UI Avatar)
+        *   ปุ่ม "เปลี่ยนรูปโปรไฟล์" (ไอคอน `Camera` จาก Lucide-Svelte)
+            *   **Action:** เปิด `File Input`. เมื่อเลือกรูป, แสดงเครื่องมือ Crop (JS library, บังคับ 1:1).
+            *   **บันทึก:** อัปโหลดรูปที่ Crop แล้วไป `avatars` bucket, อัปเดต `profiles.avatar_url`.
+            *   **Toast:** `"เปลี่ยนรูปโปรไฟล์สำเร็จแล้ว"`
+    *   **ชื่อที่แสดง (Display Name):**
+        *   แสดงชื่อปัจจุบัน (`profiles.display_name`)
+        *   `Input text` สำหรับแก้ไข + ปุ่ม "บันทึกชื่อ"
+            *   **Action:** `UPDATE profiles SET display_name = ... WHERE id = auth.uid()`
+            *   **Toast:** `"อัปเดตชื่อที่แสดงเป็น '[ชื่อใหม่]' เรียบร้อยแล้ว"`
+    *   **สิทธิ์ผู้ใช้งาน (Role):**
+        *   แสดงบทบาทปัจจุบัน (จาก `profiles.role_id` JOIN `roles.name`) ด้วย `Badge` (Skeleton UI)
+            *   Member: สีเขียว (`bg-green-500 text-white`)
+            *   Translator: สีเหลือง/ทอง (`bg-yellow-500 text-black` หรือ `bg-amber-500`)
+            *   Admin: สีแดง (`bg-red-500 text-white`)
+        *   (Read-only ส่วนนี้)
+    *   **อีเมล (Email):**
+        *   แสดงอีเมล (`auth.users.email`) (Read-only)
+    *   **เปลี่ยนรหัสผ่าน (Change Password):**
+        *   ปุ่ม "เปลี่ยนรหัสผ่าน"
+            *   **Action:** เปิด Modal เปลี่ยนรหัสผ่าน:
+                *   **ฟิลด์:** รหัสผ่านปัจจุบัน, รหัสผ่านใหม่, ยืนยันรหัสผ่านใหม่ (Felte + Zod validation)
+                *   **ปุ่ม:** "บันทึกรหัสผ่านใหม่", "ยกเลิก"
+                *   **Action (บันทึก):** ใช้ Supabase Auth `updateUser({ password: newPassword })` (ต้องมีการ re-authenticate หรือใส่ current password ถ้า API ต้องการ)
+                *   **Toast (สำเร็จ):** `"เปลี่ยนรหัสผ่านสำเร็จแล้ว กรุณาเข้าสู่ระบบใหม่อีกครั้ง"` (บังคับ Logout และ Redirect ไป Login)
+                *   **Toast (ล้มเหลว):** `"ไม่สามารถเปลี่ยนรหัสผ่านได้: [เหตุผล]"`
+    *   **ออกจากระบบ (Logout):**
+        *   ปุ่ม "ออกจากระบบ" (ไอคอน `LogOut` จาก Lucide-Svelte)
+            *   **Action:** เปิด Modal ยืนยัน "คุณต้องการออกจากระบบหรือไม่?"
+            *   **ยืนยัน:** `supabase.auth.signOut()`
+            *   **Toast:** `"ออกจากระบบแล้ว แล้วพบกันใหม่!"` (Redirect ไปหน้าแรก)
+*   **Tech Stack:** SvelteKit, Skeleton UI (Card, Avatar, Input, Button, Modal, Badge), Felte + Zod, Supabase Auth, Supabase DB (`profiles`, `roles`), JS library (Crop)
+
+## 9. Key User Experience Flows & Enhancements
+
+*   **การล็อกอิน:** ผ่าน Modal ไม่ต้องเปลี่ยนหน้า
+*   **การนำทาง:** ชัดเจน, Responsive
+*   **ประสบการณ์การอ่าน:** ปรับแต่งได้, โหมดอ่านต่อเนื่อง, ไม่มี Horizontal Scroll
+*   **เครื่องมือช่วยแปล:** บรรทัดมาร์ค, คัดลอกง่าย
+*   **การตอบสนองของระบบ:**
+    *   **Empty States:** เมื่อไม่มีข้อมูล (เช่น ไม่มีนิยาย, ไม่มีบุ๊คมาร์ค) ให้แสดงข้อความพร้อมภาพประกอบหรือไอคอนที่สื่อความหมาย และอาจมี Call-to-Action (เช่น ปุ่ม "สร้างนิยายเรื่องแรกของคุณ")
+    *   **Loading States:** แสดง Skeleton loaders หรือ Spinners ขณะโหลดข้อมูล
+    *   **Error Handling:** (ดูข้อ 10)
+*   **การออกแบบ:** สวยงามด้วยสีทอง-เทา, ฟอนต์ Sarabun, ตอบสนองทุกอุปกรณ์
+*   **ปุ่ม Arrow Up:** ช่วยเลื่อนกลับไปบนสุดของหน้ายาวๆ
+*   **การแจ้งเตือนการกระทำ (Action Confirmations):**
+    *   ใช้ Toast notifications (Skeleton UI) แสดงผลมุมล่างขวาของจอ
+    *   สีของ Toast สื่อถึงประเภทการแจ้งเตือน: เขียว (สำเร็จ), เหลือง/ส้ม (คำเตือน/ข้อมูล), แดง (ข้อผิดพลาด)
+*   **การสร้าง `mark_lines` อัตโนมัติ:** เมื่อสร้างตอนใหม่ (Manual/Batch) ระบบจะสร้าง record ว่างๆ ใน `mark_lines` สำหรับตอนนั้นและ `author_id` ของนิยายโดยอัตโนมัติ เพื่อเตรียมพร้อมให้ User นั้นเริ่มมาร์คได้เลย
+
+## 10. การจัดการข้อผิดพลาดเบื้องต้น (Basic Error Handling)
+
+*   **Client-Side Validation (Felte + Zod):** ตรวจสอบข้อมูลในฟอร์มก่อนส่ง, แสดงข้อผิดพลาดใต้ฟิลด์
+*   **Server-Side Validation (SvelteKit actions/loaders, Supabase Edge Functions):** ตรวจสอบข้อมูลอีกครั้งด้วย Zod หรือ Logic ของ Supabase (เช่น RLS, constraints)
+*   **User-Facing Error Messages (Toast Notifications):**
+    *   ทั่วไป: `Toast: "เกิดข้อผิดพลาดบางอย่าง กรุณาลองใหม่อีกครั้ง"`
+    *   เฉพาะเจาะจง (ถ้าเป็นไปได้): `Toast: "ไม่สามารถบันทึกข้อมูลได้: ชื่อเรื่องซ้ำ"`
+    *   หลีกเลี่ยง Technical details
+*   **Code-Level Error Handling:** `try...catch` ใน SvelteKit `load` / `actions` และ Edge Functions. คืน HTTP status code ที่เหมาะสม.
+*   **Error Logging:** `console.error` ระหว่างพัฒนา. Supabase มี Logging ในตัว.
+
+## 11. มาตรการความปลอดภัยเบื้องต้น (Basic Security Measures)
+
+*   **Authentication:** Supabase Auth, เปิด Email Verification.
+*   **Authorization (RLS):** เปิดใช้งานสำหรับทุกตารางสำคัญ. กำหนด Policy เข้มงวดตามบทบาทและ ownership.
+*   **Input Validation:** Zod ทั้ง Client และ Server. Sanitize HTML output (ถ้าแสดงผล HTML ที่ User ป้อนโดยตรง, เช่น TipTap content ควรมีการ sanitize ก่อนบันทึกหรือก่อนแสดงผล).
+*   **HTTPS:** ให้บริการผ่าน HTTPS (Supabase/Hosting จัดการให้)
+*   **Environment Variables:** เก็บ Keys ใน `.env.local`, ห้าม commit. ใช้ Service Role Key เฉพาะฝั่ง Server.
+*   **Data Backups:** Supabase มีระบบสำรองข้อมูลอัตโนมัติ. พิจารณา Manual Backups เป็นระยะสำหรับข้อมูลสำคัญมากๆ.
+*   **Principle of Least Privilege:** ผู้ใช้มีสิทธิ์เท่าที่จำเป็น.
+*   **Software Updates:** หมั่นอัปเดต SvelteKit, Supabase client, และ Dependencies อื่นๆ.
