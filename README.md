@@ -963,3 +963,548 @@ ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, description = EXCLUDED.d
 *   **Data Backups:** Supabase มีระบบสำรองข้อมูลอัตโนมัติ. พิจารณา Manual Backups เป็นระยะสำหรับข้อมูลสำคัญมากๆ.
 *   **Principle of Least Privilege:** ผู้ใช้มีสิทธิ์เท่าที่จำเป็น.
 *   **Software Updates:** หมั่นอัปเดต SvelteKit, Supabase client, และ Dependencies อื่นๆ.
+
+
+
+
+
+
+----
+**สำคัญ:**
+
+1.  **เปิดใช้งาน RLS:** ก่อนอื่นคุณต้องเปิดใช้งาน RLS สำหรับแต่ละตาราง
+2.  **Helper Function:** เราจะสร้าง Helper Function ใน SQL เพื่อช่วยดึงชื่อบทบาทของผู้ใช้ปัจจุบัน ซึ่งจะทำให้การเขียน Policy อ่านง่ายขึ้น
+3.  **Admin Overrides:** โดยทั่วไป Admin จะมีสิทธิ์เข้าถึงข้อมูลทั้งหมด Policy จะสะท้อนสิ่งนี้
+4.  **Default Deny:** หาก RLS เปิดใช้งานและไม่มี Policy ใดอนุญาต การเข้าถึงจะถูกปฏิเสธ
+5.  **Testing:** หลังจาก Apply Policy เหล่านี้แล้ว จำเป็นต้องทดสอบอย่างละเอียดในทุกบทบาทผู้ใช้และทุกสถานการณ์
+
+---
+
+### 1. Helper Function (สร้างใน SQL Editor ของ Supabase)
+
+ฟังก์ชันนี้จะช่วยให้เราดึงชื่อบทบาทของผู้ใช้ที่กำลัง login อยู่ เพื่อใช้ใน policies:
+
+```sql
+CREATE OR REPLACE FUNCTION get_user_role_name(user_id_input UUID)
+RETURNS TEXT AS $$
+DECLARE
+    role_name_output TEXT;
+BEGIN
+    SELECT r.name INTO role_name_output
+    FROM profiles p
+    JOIN roles r ON p.role_id = r.id
+    WHERE p.id = user_id_input;
+    RETURN role_name_output;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RETURN NULL; -- หรือ 'anon' ถ้าต้องการ
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Grant execute permission to authenticated users for this function
+GRANT EXECUTE ON FUNCTION get_user_role_name(UUID) TO authenticated;
+```
+
+---
+
+### 2. Policies สำหรับแต่ละตาราง
+
+#### `roles` Table
+ตารางนี้มักจะถูกจัดการโดย Admin หรือเป็นข้อมูลตั้งต้น
+
+```sql
+-- เปิดใช้งาน RLS สำหรับตาราง roles
+ALTER TABLE roles ENABLE ROW LEVEL SECURITY;
+
+-- Policy สำหรับ roles
+DROP POLICY IF EXISTS "Allow all authenticated users to read roles" ON roles;
+CREATE POLICY "Allow all authenticated users to read roles"
+    ON roles FOR SELECT
+    TO authenticated
+    USING (true);
+
+DROP POLICY IF EXISTS "Allow Admins to manage roles" ON roles;
+CREATE POLICY "Allow Admins to manage roles"
+    ON roles FOR ALL -- (SELECT, INSERT, UPDATE, DELETE)
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin')
+    WITH CHECK (get_user_role_name(auth.uid()) = 'Admin');
+```
+
+#### `profiles` Table
+ข้อมูลโปรไฟล์ผู้ใช้
+
+```sql
+-- เปิดใช้งาน RLS สำหรับตาราง profiles
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+-- Policy สำหรับ profiles
+DROP POLICY IF EXISTS "Allow users to read their own profile" ON profiles;
+CREATE POLICY "Allow users to read their own profile"
+    ON profiles FOR SELECT
+    TO authenticated
+    USING (id = auth.uid());
+
+DROP POLICY IF EXISTS "Allow Admins to read all profiles" ON profiles;
+CREATE POLICY "Allow Admins to read all profiles"
+    ON profiles FOR SELECT
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin');
+
+DROP POLICY IF EXISTS "Allow users to update their own profile (specific fields)" ON profiles;
+CREATE POLICY "Allow users to update their own profile (specific fields)"
+    ON profiles FOR UPDATE
+    TO authenticated
+    USING (id = auth.uid())
+    WITH CHECK (id = auth.uid());
+    -- การจำกัด field ที่ update ได้ (เช่น display_name, avatar_url) มักจะทำใน application logic หรือ trigger
+    -- RLS จะควบคุมว่า user สามารถ update แถวของตัวเองได้หรือไม่
+
+DROP POLICY IF EXISTS "Allow Admins to update all profiles" ON profiles;
+CREATE POLICY "Allow Admins to update all profiles"
+    ON profiles FOR UPDATE
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin')
+    WITH CHECK (get_user_role_name(auth.uid()) = 'Admin');
+
+-- INSERTs มักจะถูกจัดการโดย trigger หลังจาก user สร้างบัญชีใน auth.users
+-- DELETEs มักจะ cascade มาจาก auth.users หรือ Admin จัดการ
+DROP POLICY IF EXISTS "Allow Admins to delete profiles" ON profiles;
+CREATE POLICY "Allow Admins to delete profiles"
+    ON profiles FOR DELETE
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin');
+```
+
+#### `categories` Table
+หมวดหมู่นิยาย
+
+```sql
+-- เปิดใช้งาน RLS สำหรับตาราง categories
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+
+-- Policy สำหรับ categories
+DROP POLICY IF EXISTS "Allow public read access to categories" ON categories;
+CREATE POLICY "Allow public read access to categories"
+    ON categories FOR SELECT
+    TO public -- (anon and authenticated)
+    USING (true);
+
+DROP POLICY IF EXISTS "Allow Admins to manage categories" ON categories;
+CREATE POLICY "Allow Admins to manage categories"
+    ON categories FOR ALL
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin')
+    WITH CHECK (get_user_role_name(auth.uid()) = 'Admin');
+```
+
+#### `novels` Table
+ข้อมูลนิยาย
+
+```sql
+-- เปิดใช้งาน RLS สำหรับตาราง novels
+ALTER TABLE novels ENABLE ROW LEVEL SECURITY;
+
+-- Policy สำหรับ novels (SELECT)
+DROP POLICY IF EXISTS "Allow public read for 'ทุกคน' visibility novels" ON novels;
+CREATE POLICY "Allow public read for 'ทุกคน' visibility novels"
+    ON novels FOR SELECT
+    TO public
+    USING ('ทุกคน' = ANY(visibility));
+
+DROP POLICY IF EXISTS "Allow members read for 'เฉพาะสมาชิก' visibility novels" ON novels;
+CREATE POLICY "Allow members read for 'เฉพาะสมาชิก' visibility novels"
+    ON novels FOR SELECT
+    TO authenticated
+    USING (('เฉพาะสมาชิก' = ANY(visibility) AND auth.role() = 'authenticated') OR
+           ('เฉพาะนักแปล' = ANY(visibility) AND get_user_role_name(auth.uid()) IN ('Translator', 'Admin')));
+
+DROP POLICY IF EXISTS "Allow Admins to read all novels" ON novels;
+CREATE POLICY "Allow Admins to read all novels"
+    ON novels FOR SELECT
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin');
+
+-- Policy สำหรับ novels (INSERT)
+DROP POLICY IF EXISTS "Allow Translators and Admins to create novels" ON novels;
+CREATE POLICY "Allow Translators and Admins to create novels"
+    ON novels FOR INSERT
+    TO authenticated
+    WITH CHECK (
+        get_user_role_name(auth.uid()) IN ('Translator', 'Admin') AND
+        author_id = auth.uid() -- ผู้สร้างต้องเป็นคนเดียวกับที่ login
+    );
+
+-- Policy สำหรับ novels (UPDATE)
+DROP POLICY IF EXISTS "Allow author (Translator) to update their own novels" ON novels;
+CREATE POLICY "Allow author (Translator) to update their own novels"
+    ON novels FOR UPDATE
+    TO authenticated
+    USING (
+        get_user_role_name(auth.uid()) = 'Translator' AND
+        author_id = auth.uid()
+    )
+    WITH CHECK (
+        get_user_role_name(auth.uid()) = 'Translator' AND
+        author_id = auth.uid()
+    );
+
+DROP POLICY IF EXISTS "Allow Admins to update any novel" ON novels;
+CREATE POLICY "Allow Admins to update any novel"
+    ON novels FOR UPDATE
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin')
+    WITH CHECK (get_user_role_name(auth.uid()) = 'Admin');
+
+-- Policy สำหรับ novels (DELETE)
+DROP POLICY IF EXISTS "Allow author (Translator) to delete their own novels" ON novels;
+CREATE POLICY "Allow author (Translator) to delete their own novels"
+    ON novels FOR DELETE
+    TO authenticated
+    USING (
+        get_user_role_name(auth.uid()) = 'Translator' AND
+        author_id = auth.uid()
+    );
+
+DROP POLICY IF EXISTS "Allow Admins to delete any novel" ON novels;
+CREATE POLICY "Allow Admins to delete any novel"
+    ON novels FOR DELETE
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin');
+```
+
+#### `chapters` Table
+ข้อมูลตอนของนิยาย
+
+```sql
+-- เปิดใช้งาน RLS สำหรับตาราง chapters
+ALTER TABLE chapters ENABLE ROW LEVEL SECURITY;
+
+-- Helper function to check novel visibility for a chapter
+CREATE OR REPLACE FUNCTION can_view_novel_for_chapter(p_novel_id UUID)
+RETURNS BOOLEAN AS $$
+DECLARE
+    novel_visibility TEXT[];
+    user_role TEXT;
+BEGIN
+    SELECT visibility INTO novel_visibility FROM novels WHERE id = p_novel_id;
+    IF NOT FOUND THEN
+        RETURN FALSE;
+    END IF;
+
+    user_role := get_user_role_name(auth.uid());
+
+    IF 'ทุกคน' = ANY(novel_visibility) THEN
+        RETURN TRUE;
+    END IF;
+
+    IF auth.role() = 'authenticated' THEN
+        IF 'เฉพาะสมาชิก' = ANY(novel_visibility) THEN
+            RETURN TRUE;
+        END IF;
+        IF 'เฉพาะนักแปล' = ANY(novel_visibility) AND user_role IN ('Translator', 'Admin') THEN
+            RETURN TRUE;
+        END IF;
+    END IF;
+
+    IF user_role = 'Admin' THEN -- Admin can always view
+        RETURN TRUE;
+    END IF;
+
+    RETURN FALSE;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+GRANT EXECUTE ON FUNCTION can_view_novel_for_chapter(UUID) TO public;
+
+
+-- Policy สำหรับ chapters (SELECT)
+DROP POLICY IF EXISTS "Allow public read for 'ทุกคน' access chapters if novel is visible" ON chapters;
+CREATE POLICY "Allow public read for 'ทุกคน' access chapters if novel is visible"
+    ON chapters FOR SELECT
+    TO public
+    USING (
+        'ทุกคน' = ANY(access_level) AND
+        can_view_novel_for_chapter(novel_id)
+    );
+
+DROP POLICY IF EXISTS "Allow members read for 'เฉพาะสมาชิก' access chapters if novel is visible" ON chapters;
+CREATE POLICY "Allow members read for 'เฉพาะสมาชิก' access chapters if novel is visible"
+    ON chapters FOR SELECT
+    TO authenticated
+    USING (
+        (
+            ('เฉพาะสมาชิก' = ANY(access_level) AND auth.role() = 'authenticated') OR
+            ('เฉพาะนักแปล' = ANY(access_level) AND get_user_role_name(auth.uid()) IN ('Translator', 'Admin'))
+        ) AND
+        can_view_novel_for_chapter(novel_id)
+    );
+
+DROP POLICY IF EXISTS "Allow Admins to read all chapters" ON chapters;
+CREATE POLICY "Allow Admins to read all chapters"
+    ON chapters FOR SELECT
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin');
+
+
+-- Policy สำหรับ chapters (INSERT)
+DROP POLICY IF EXISTS "Allow authorized users to create chapters for their novels" ON chapters;
+CREATE POLICY "Allow authorized users to create chapters for their novels"
+    ON chapters FOR INSERT
+    TO authenticated
+    WITH CHECK (
+        created_by = auth.uid() AND
+        get_user_role_name(auth.uid()) IN ('Translator', 'Admin') AND
+        EXISTS (SELECT 1 FROM novels n WHERE n.id = novel_id AND n.author_id = auth.uid()) -- Check novel ownership
+    );
+
+-- Policy สำหรับ chapters (UPDATE)
+DROP POLICY IF EXISTS "Allow authorized users to update chapters of their novels" ON chapters;
+CREATE POLICY "Allow authorized users to update chapters of their novels"
+    ON chapters FOR UPDATE
+    TO authenticated
+    USING (
+        created_by = auth.uid() AND -- or check novel author
+        get_user_role_name(auth.uid()) = 'Translator' AND
+        EXISTS (SELECT 1 FROM novels n WHERE n.id = novel_id AND n.author_id = auth.uid())
+    )
+    WITH CHECK (
+        created_by = auth.uid() AND
+        get_user_role_name(auth.uid()) = 'Translator' AND
+        EXISTS (SELECT 1 FROM novels n WHERE n.id = novel_id AND n.author_id = auth.uid())
+    );
+
+DROP POLICY IF EXISTS "Allow Admins to update any chapter" ON chapters;
+CREATE POLICY "Allow Admins to update any chapter"
+    ON chapters FOR UPDATE
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin')
+    WITH CHECK (get_user_role_name(auth.uid()) = 'Admin');
+
+-- Policy สำหรับ chapters (DELETE)
+DROP POLICY IF EXISTS "Allow authorized users to delete chapters of their novels" ON chapters;
+CREATE POLICY "Allow authorized users to delete chapters of their novels"
+    ON chapters FOR DELETE
+    TO authenticated
+    USING (
+        created_by = auth.uid() AND -- or check novel author
+        get_user_role_name(auth.uid()) = 'Translator' AND
+        EXISTS (SELECT 1 FROM novels n WHERE n.id = novel_id AND n.author_id = auth.uid())
+    );
+
+DROP POLICY IF EXISTS "Allow Admins to delete any chapter" ON chapters;
+CREATE POLICY "Allow Admins to delete any chapter"
+    ON chapters FOR DELETE
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin');
+```
+
+#### `user_bookmarks` Table
+บุ๊คมาร์คของผู้ใช้
+
+```sql
+-- เปิดใช้งาน RLS สำหรับตาราง user_bookmarks
+ALTER TABLE user_bookmarks ENABLE ROW LEVEL SECURITY;
+
+-- Policy สำหรับ user_bookmarks
+DROP POLICY IF EXISTS "Allow users to manage their own bookmarks" ON user_bookmarks;
+CREATE POLICY "Allow users to manage their own bookmarks"
+    ON user_bookmarks FOR ALL
+    TO authenticated
+    USING (user_id = auth.uid())
+    WITH CHECK (user_id = auth.uid());
+
+-- Admins might need to view for support, but not directly manage other's bookmarks unless necessary
+DROP POLICY IF EXISTS "Allow Admins to view all bookmarks (for support)" ON user_bookmarks;
+CREATE POLICY "Allow Admins to view all bookmarks (for support)"
+    ON user_bookmarks FOR SELECT
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin');
+```
+
+#### `mark_lines` Table
+บรรทัดมาร์คของนักแปล
+
+```sql
+-- เปิดใช้งาน RLS สำหรับตาราง mark_lines
+ALTER TABLE mark_lines ENABLE ROW LEVEL SECURITY;
+
+-- Policy สำหรับ mark_lines
+DROP POLICY IF EXISTS "Allow Translators to manage their own marks" ON mark_lines;
+CREATE POLICY "Allow Translators to manage their own marks"
+    ON mark_lines FOR ALL
+    TO authenticated
+    USING (
+        user_id = auth.uid() AND
+        get_user_role_name(auth.uid()) = 'Translator'
+    )
+    WITH CHECK (
+        user_id = auth.uid() AND
+        get_user_role_name(auth.uid()) = 'Translator' AND
+        -- Ensure the chapter belongs to a novel they own or are assigned to.
+        -- For simplicity with current schema, check if they are the novel's author:
+        EXISTS (
+            SELECT 1
+            FROM chapters c
+            JOIN novels n ON c.novel_id = n.id
+            WHERE c.id = chapter_id AND n.author_id = auth.uid()
+        )
+    );
+
+DROP POLICY IF EXISTS "Allow Admins to view all marks" ON mark_lines;
+CREATE POLICY "Allow Admins to view all marks"
+    ON mark_lines FOR SELECT
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin');
+
+DROP POLICY IF EXISTS "Allow Admins to delete marks (for moderation)" ON mark_lines;
+CREATE POLICY "Allow Admins to delete marks (for moderation)"
+    ON mark_lines FOR DELETE
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin');
+```
+
+#### `announcements` Table
+ประกาศ
+
+```sql
+-- เปิดใช้งาน RLS สำหรับตาราง announcements
+ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
+
+-- Policy สำหรับ announcements
+DROP POLICY IF EXISTS "Allow public to view active and relevant announcements" ON announcements;
+CREATE POLICY "Allow public to view active and relevant announcements"
+    ON announcements FOR SELECT
+    TO public -- (anon and authenticated)
+    USING (
+        is_active = TRUE AND
+        CURRENT_TIMESTAMP BETWEEN start_date AND end_date AND
+        (
+            'ทุกคน' = ANY(target_roles) OR
+            (auth.role() = 'authenticated' AND get_user_role_name(auth.uid()) = ANY(target_roles)) OR
+            (auth.role() = 'anon' AND 'Member' = ANY(target_roles)) -- If 'Member' target_roles should also apply to anon for some cases
+            -- Note: target_pages matching is typically done in application logic
+        )
+    );
+
+DROP POLICY IF EXISTS "Allow Admins to manage announcements" ON announcements;
+CREATE POLICY "Allow Admins to manage announcements"
+    ON announcements FOR ALL
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin')
+    WITH CHECK (get_user_role_name(auth.uid()) = 'Admin');
+```
+
+#### `site_settings` Table
+การตั้งค่าเว็บไซต์
+
+```sql
+-- เปิดใช้งาน RLS สำหรับตาราง site_settings
+ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
+
+-- Policy สำหรับ site_settings
+DROP POLICY IF EXISTS "Allow authenticated users to read site settings" ON site_settings;
+CREATE POLICY "Allow authenticated users to read site settings"
+    ON site_settings FOR SELECT
+    TO authenticated -- App logic needs these
+    USING (true);
+-- If some settings are truly public, a separate policy for 'public' role can be added.
+
+DROP POLICY IF EXISTS "Allow Admins to manage site settings" ON site_settings;
+CREATE POLICY "Allow Admins to manage site settings"
+    ON site_settings FOR ALL
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin')
+    WITH CHECK (get_user_role_name(auth.uid()) = 'Admin');
+```
+
+#### `site_changelogs` Table
+Changelog ของเว็บไซต์
+
+```sql
+-- เปิดใช้งาน RLS สำหรับตาราง site_changelogs
+ALTER TABLE site_changelogs ENABLE ROW LEVEL SECURITY;
+
+-- Policy สำหรับ site_changelogs
+DROP POLICY IF EXISTS "Allow public to view published changelogs" ON site_changelogs;
+CREATE POLICY "Allow public to view published changelogs"
+    ON site_changelogs FOR SELECT
+    TO public
+    USING (is_published = TRUE);
+
+DROP POLICY IF EXISTS "Allow Admins to manage changelogs" ON site_changelogs;
+CREATE POLICY "Allow Admins to manage changelogs"
+    ON site_changelogs FOR ALL
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin')
+    WITH CHECK (get_user_role_name(auth.uid()) = 'Admin');
+```
+
+#### `novel_versions` Table
+เวอร์ชันของข้อมูลนิยาย
+
+```sql
+-- เปิดใช้งาน RLS สำหรับตาราง novel_versions
+ALTER TABLE novel_versions ENABLE ROW LEVEL SECURITY;
+
+-- Policy สำหรับ novel_versions
+DROP POLICY IF EXISTS "Allow novel authors (Translators) to view their novel versions" ON novel_versions;
+CREATE POLICY "Allow novel authors (Translators) to view their novel versions"
+    ON novel_versions FOR SELECT
+    TO authenticated
+    USING (
+        get_user_role_name(auth.uid()) = 'Translator' AND
+        EXISTS (SELECT 1 FROM novels n WHERE n.id = novel_id AND n.author_id = auth.uid())
+    );
+
+DROP POLICY IF EXISTS "Allow Admins to view all novel versions" ON novel_versions;
+CREATE POLICY "Allow Admins to view all novel versions"
+    ON novel_versions FOR SELECT
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin');
+
+-- INSERTs, UPDATEs, DELETEs for versions are typically system-driven or Admin tasks
+DROP POLICY IF EXISTS "Allow Admins to manage novel versions (e.g., restore, cleanup)" ON novel_versions;
+CREATE POLICY "Allow Admins to manage novel versions (e.g., restore, cleanup)"
+    ON novel_versions FOR ALL -- Be cautious with FOR ALL
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin')
+    WITH CHECK (get_user_role_name(auth.uid()) = 'Admin');
+    -- Specific policies for INSERT (created_by = auth.uid()) might be better if app directly inserts.
+```
+
+#### `chapter_versions` Table
+เวอร์ชันของเนื้อหาตอน
+
+```sql
+-- เปิดใช้งาน RLS สำหรับตาราง chapter_versions
+ALTER TABLE chapter_versions ENABLE ROW LEVEL SECURITY;
+
+-- Policy สำหรับ chapter_versions
+DROP POLICY IF EXISTS "Allow authors to view their chapter versions" ON chapter_versions;
+CREATE POLICY "Allow authors to view their chapter versions"
+    ON chapter_versions FOR SELECT
+    TO authenticated
+    USING (
+        get_user_role_name(auth.uid()) = 'Translator' AND
+        EXISTS (
+            SELECT 1
+            FROM chapters c
+            JOIN novels n ON c.novel_id = n.id
+            WHERE c.id = chapter_id AND n.author_id = auth.uid()
+        )
+    );
+
+DROP POLICY IF EXISTS "Allow Admins to view all chapter versions" ON chapter_versions;
+CREATE POLICY "Allow Admins to view all chapter versions"
+    ON chapter_versions FOR SELECT
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin');
+
+-- INSERTs, UPDATEs, DELETEs for versions are typically system-driven or Admin tasks
+DROP POLICY IF EXISTS "Allow Admins to manage chapter versions" ON chapter_versions;
+CREATE POLICY "Allow Admins to manage chapter versions"
+    ON chapter_versions FOR ALL
+    TO authenticated
+    USING (get_user_role_name(auth.uid()) = 'Admin')
+    WITH CHECK (get_user_role_name(auth.uid()) = 'Admin');
+```
