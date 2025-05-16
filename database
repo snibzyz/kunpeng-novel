@@ -1,0 +1,103 @@
+public	announcements	id	integer	NO	nextval('announcements_id_seq'::regclass)	null	32	0
+public	announcements	title	text	NO	null	null	null	null
+public	announcements	content	text	NO	null	null	null	null
+public	announcements	start_date	timestamp with time zone	YES	null	null	null	null
+public	announcements	end_date	timestamp with time zone	YES	null	null	null	null
+public	announcements	target_roles	jsonb	YES	'["Guest", "Member", "Translator", "Admin"]'::jsonb	null	null	null
+public	announcements	target_pages	jsonb	YES	'["homepage"]'::jsonb	null	null	null
+public	announcements	is_active	boolean	YES	TRUE	null	null	null
+public	announcements	created_by	uuid	YES	null	null	null	null
+public	announcements	created_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
+public	announcements	updated_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
+public	categories	id	integer	NO	nextval('categories_id_seq'::regclass)	null	32	0
+public	categories	name	text	NO	null	null	null	null
+public	categories	slug	text	NO	null	null	null	null
+public	categories	description	text	YES	null	null	null	null
+public	categories	created_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
+public	categories	updated_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
+public	chapter_versions	id	integer	NO	nextval('chapter_versions_id_seq'::regclass)	null	32	0
+public	chapter_versions	chapter_id	uuid	NO	null	null	null	null
+public	chapter_versions	version_number	integer	NO	null	null	32	0
+public	chapter_versions	content_original_snapshot	text	YES	null	null	null	null
+public	chapter_versions	created_by	uuid	YES	null	null	null	null
+public	chapter_versions	notes	text	YES	null	null	null	null
+public	chapter_versions	created_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
+public	chapters	id	uuid	NO	gen_random_uuid()	null	null	null
+public	chapters	novel_id	uuid	NO	null	null	null	null
+public	chapters	chapter_number	text	NO	null	null	null	null
+public	chapters	title	text	NO	null	null	null	null
+public	chapters	content_original	text	YES	null	null	null	null
+public	chapters	status	text	YES	'published'::text	null	null	null
+public	chapters	access_level	jsonb	YES	'["everyone"]'::jsonb	null	null	null
+public	chapters	created_by	uuid	NO	null	null	null	null
+public	chapters	word_count	integer	YES	null	null	32	0
+public	chapters	created_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
+public	chapters	updated_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
+public	mark_lines	id	uuid	NO	gen_random_uuid()	null	null	null
+public	mark_lines	user_id	uuid	NO	null	null	null	null
+public	mark_lines	chapter_id	uuid	NO	null	null	null	null
+public	mark_lines	user_email	text	YES	null	null	null	null
+public	mark_lines	user_display_name	text	YES	null	null	null	null
+public	mark_lines	novel_id	uuid	NO	null	null	null	null
+public	mark_lines	novel_title	text	YES	null	null	null	null
+public	mark_lines	chapter_number	text	YES	null	null	null	null
+public	mark_lines	chapter_title	text	YES	null	null	null	null
+public	mark_lines	marked_line_numbers	jsonb	NO	'[]'::jsonb	null	null	null
+public	mark_lines	created_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
+public	mark_lines	updated_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
+public	novel_versions	id	integer	NO	nextval('novel_versions_id_seq'::regclass)	null	32	0
+public	novel_versions	novel_id	uuid	NO	null	null	null	null
+public	novel_versions	version_number	integer	NO	null	null	32	0
+public	novel_versions	metadata_snapshot	jsonb	NO	null	null	null	null
+public	novel_versions	created_by	uuid	YES	null	null	null	null
+public	novel_versions	notes	text	YES	null	null	null	null
+public	novel_versions	created_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
+public	novels	id	uuid	NO	gen_random_uuid()	null	null	null
+public	novels	title	text	NO	null	null	null	null
+public	novels	slug	text	NO	null	null	null	null
+public	novels	synopsis	text	YES	null	null	null	null
+public	novels	cover_image_url	text	YES	null	null	null	null
+public	novels	category_id	integer	YES	null	null	32	0
+public	novels	original_language	text	NO	null	null	null	null
+public	novels	status	text	YES	'ongoing'::text	null	null	null
+public	novels	visibility	jsonb	YES	'["everyone"]'::jsonb	null	null	null
+public	novels	default_chapter_status	text	YES	'published'::text	null	null	null
+public	novels	default_chapter_access	jsonb	YES	'["everyone"]'::jsonb	null	null	null
+public	novels	created_by	uuid	NO	null	null	null	null
+public	novels	total_chapters	integer	YES	0	null	32	0
+public	novels	last_chapter_updated_at	timestamp with time zone	YES	null	null	null	null
+public	novels	created_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
+public	novels	updated_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
+public	profiles	id	uuid	NO	null	null	null	null
+public	profiles	display_name	text	YES	null	null	null	null
+public	profiles	avatar_url	text	YES	null	null	null	null
+public	profiles	role_id	integer	NO	null	null	32	0
+public	profiles	role_expiry_date	timestamp with time zone	YES	null	null	null	null
+public	profiles	is_suspended	boolean	YES	FALSE	null	null	null
+public	profiles	user_settings	jsonb	YES	'{}'::jsonb	null	null	null
+public	profiles	created_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
+public	profiles	updated_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
+public	profiles	email	text	YES	null	null	null	null
+public	roles	id	integer	NO	nextval('roles_id_seq'::regclass)	null	32	0
+public	roles	name	text	NO	null	null	null	null
+public	site_changelogs	id	integer	NO	nextval('site_changelogs_id_seq'::regclass)	null	32	0
+public	site_changelogs	version_number	text	NO	null	null	null	null
+public	site_changelogs	release_date	date	NO	null	null	null	null
+public	site_changelogs	summary	text	YES	null	null	null	null
+public	site_changelogs	is_published	boolean	YES	FALSE	null	null	null
+public	site_changelogs	created_by	uuid	YES	null	null	null	null
+public	site_changelogs	created_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
+public	site_changelogs	updated_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
+public	site_settings	key	text	NO	null	null	null	null
+public	site_settings	value	jsonb	YES	null	null	null	null
+public	site_settings	description	text	YES	null	null	null	null
+public	site_settings	created_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
+public	site_settings	updated_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
+public	user_bookmarks	id	integer	NO	nextval('user_bookmarks_id_seq'::regclass)	null	32	0
+public	user_bookmarks	user_id	uuid	NO	null	null	null	null
+public	user_bookmarks	chapter_id	uuid	NO	null	null	null	null
+public	user_bookmarks	novel_id	uuid	NO	null	null	null	null
+public	user_bookmarks	bookmarked_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
+public	user_chapter_reads	user_id	uuid	NO	null	null	null	null
+public	user_chapter_reads	chapter_id	uuid	NO	null	null	null	null
+public	user_chapter_reads	read_at	timestamp with time zone	YES	CURRENT_TIMESTAMP	null	null	null
